@@ -1,0 +1,54 @@
+# Helix v2 — 100M PLAIN-TRANSFORMER reference for ablation.
+#
+# Same dimensions as ``helix_v2_100m.yaml`` but every layer is plain causal
+# multi-head attention. Used by ``mix_ablation.py`` / ``seed_sweep.py`` /
+# any "does the hybrid stack help?" comparison.
+#
+# If plain attention beats the hybrid stack on the same data budget, that
+# is a very strong signal to reconsider the architecture before Phase 1.
+
+name: helix_v2_100m_ref
+version: "2.0.0"
+
+tokenizer:
+  path: "tokenizer/helix_v2_tokenizer.model"
+  vocab_size: 200000
+
+model:
+  d_model: 512
+  n_layers: 8
+  n_heads: 8
+  d_head: 64
+  d_ffn: 1344
+  activation: silu
+  norm_type: rmsnorm
+  norm_eps: 1.0e-6
+
+# All 8 layers = plain causal attention. No sparsity / no SSM / no GLA.
+layers:
+  - {repeat: 8, config: {type: plain_attention, use_rope: true}}
+
+ffn:
+  type: dense
+  activation: silu_gated
+
+moe: {enabled: false}
+mtp: {enabled: false, n_heads: 1}
+
+position_encoding:
+  type: rope
+  theta: 10000.0
+  max_seq_length: 2048
+
+init:
+  scheme: scaled_normal
+  init_std: 0.02
+  embedding_init_std: 0.02
+  output_init_scale: 0.5
+
+dropout: {embedding: 0.0, attention: 0.0, ffn: 0.0, residual: 0.0}
+
+advanced:
+  tie_embeddings: true
+  use_flash_attention: false
+  gradient_checkpointing: false

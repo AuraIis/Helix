@@ -1,0 +1,121 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1320 880" font-family="Consolas, 'Courier New', monospace">
+  <defs>
+    <filter id="g" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="2.1" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="bg2" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="4.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0 H0 V40" fill="none" stroke="#0e3b25" stroke-width="1" opacity="0.5"/></pattern>
+    <marker id="ag" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#36f58c"/></marker>
+  </defs>
+
+  <rect width="1320" height="880" fill="#06120b"/>
+  <rect width="1320" height="880" fill="url(#grid)"/>
+  <g stroke="#2f7d52" stroke-width="1.4"><path d="M18,18 h22 M18,18 v22"/><path d="M1302,18 h-22 M1302,18 v22"/><path d="M18,862 h22 M18,862 v-22"/><path d="M1302,862 h-22 M1302,862 v-22"/></g>
+
+  <text x="40" y="48" font-size="25" font-weight="700" fill="#36f58c" filter="url(#bg2)">AURALIS — MESSDATEN &amp; REIFEGRAD  (Prüfbericht)</text>
+  <text x="42" y="72" font-size="13" fill="#38d9ff">Helix v2 · Stand ~step 33k / 50k · alle Zahlen empirisch gemessen (deterministische Eval, eval_diagnostic, Generierungs-Probes)</text>
+  <line x1="40" y1="82" x2="1290" y2="82" stroke="#1f7d4d" stroke-width="1" stroke-dasharray="3 5"/>
+
+  <!-- ===== A: training curve ===== -->
+  <rect x="40" y="95" width="610" height="235" rx="5" fill="#08231a" stroke="#36f58c" stroke-width="2" filter="url(#g)"/>
+  <text x="56" y="118" font-size="13.5" font-weight="700" fill="#36f58c">TRAININGSKURVE — val_loss ↓ (deterministisch)</text>
+  <!-- axes -->
+  <line x1="80" y1="135" x2="80" y2="295" stroke="#3a6b54" stroke-width="1.4"/>
+  <line x1="80" y1="295" x2="620" y2="295" stroke="#3a6b54" stroke-width="1.4"/>
+  <!-- gridlines -->
+  <line x1="80" y1="175" x2="620" y2="175" stroke="#143a28" stroke-width="1"/>
+  <line x1="80" y1="215" x2="620" y2="215" stroke="#143a28" stroke-width="1"/>
+  <line x1="80" y1="255" x2="620" y2="255" stroke="#143a28" stroke-width="1"/>
+  <text x="74" y="139" text-anchor="end" font-size="10" fill="#7fbf9c">2.66</text>
+  <text x="74" y="299" text-anchor="end" font-size="10" fill="#7fbf9c">2.30</text>
+  <text x="74" y="217" text-anchor="end" font-size="10" fill="#7fbf9c">2.48</text>
+  <!-- target marker 50k -->
+  <line x1="542" y1="135" x2="542" y2="295" stroke="#ffb454" stroke-width="1.3" stroke-dasharray="4 4"/>
+  <text x="542" y="312" text-anchor="middle" font-size="10" fill="#ffb454">50k Ziel</text>
+  <text x="385" y="312" text-anchor="middle" font-size="10" fill="#9fe9bd">33k jetzt</text>
+  <text x="82" y="312" font-size="10" fill="#7fbf9c">0</text>
+  <!-- curve -->
+  <polyline points="82,152 89,206 121,197 163,210 225,234 274,247 336,261 385,270" fill="none" stroke="#36f58c" stroke-width="2.4" filter="url(#g)"/>
+  <g fill="#bff5cf"><circle cx="82" cy="152" r="2.6"/><circle cx="163" cy="210" r="2.6"/><circle cx="225" cy="234" r="2.6"/><circle cx="274" cy="247" r="2.6"/><circle cx="336" cy="261" r="2.6"/><circle cx="385" cy="270" r="3.4"/></g>
+  <text x="395" y="272" font-size="11" font-weight="700" fill="#bff5cf">2.344</text>
+  <text x="95" y="150" font-size="10.5" fill="#9fe9bd">2.61 (Start)</text>
+  <text x="430" y="200" font-size="10.5" fill="#7fbf9c">glatt &amp; stetig fallend · grad_norm ~0.65 · 0 Alarme</text>
+
+  <!-- ===== B: key metrics ===== -->
+  <rect x="665" y="95" width="625" height="235" rx="5" fill="#06201f" stroke="#38d9ff" stroke-width="2" filter="url(#g)"/>
+  <text x="681" y="118" font-size="13.5" font-weight="700" fill="#7fe0ff">KENN-METRIKEN (gemessen)</text>
+  <text x="681" fill="#c7eeff" font-size="12.5">
+    <tspan x="681" y="144">REPRÄSENTATIV (alle Quellen, step 9k):</tspan>
+    <tspan x="700" y="163" fill="#eafff2">bpb_de 0.96 · bpb_en 1.03 · Gap 1.04  → fast Parität ✓</tspan>
+    <tspan x="681" y="188">TAIL-VAL (korrekte tokens/byte, ~33k):</tspan>
+    <tspan x="700" y="207" fill="#eafff2">bpb_de ~0.88 · bpb_en ~0.30 · val 2.344</tspan>
+    <tspan x="681" y="232">FERTILITÄT (gemessen):</tspan>
+    <tspan x="700" y="251" fill="#eafff2">0.176 (de) / 0.196 (en) tokens/byte → effizient</tspan>
+    <tspan x="681" y="276">STABILITÄT: grad_norm ~0.65 · 0 Health-Alarme</tspan>
+    <tspan x="681" y="300" fill="#9fb6c4">Warm-start-„Regression" früher = LR-Artefakt, per Step-0-</tspan>
+    <tspan x="700" y="318" fill="#9fb6c4">Diagnose entlarvt &amp; behoben (kein echter Rückschritt).</tspan>
+  </text>
+
+  <!-- ===== C: generation progression ===== -->
+  <rect x="40" y="345" width="610" height="285" rx="5" fill="#10081c" stroke="#b483ff" stroke-width="2" filter="url(#g)"/>
+  <text x="56" y="368" font-size="13.5" font-weight="700" fill="#cda9ff">GENERIERUNG ÜBER CHECKPOINTS (greedy)</text>
+  <text font-size="12" font-weight="700" fill="#9fb0bf"><tspan x="56" y="394">Metrik</tspan><tspan x="360" y="394">9k</tspan><tspan x="440" y="394">15k</tspan><tspan x="520" y="394">25k</tspan></text>
+  <line x1="56" y1="402" x2="634" y2="402" stroke="#3a2b54" stroke-width="1"/>
+  <g font-size="12" fill="#e6ddf5">
+    <text x="56" y="424">Wiederholung Q&amp;A</text><text x="360" y="424">0.48</text><text x="440" y="424">0.36</text><text x="520" y="424" fill="#7dffb0">0.04</text><text x="578" y="424" fill="#7dffb0">✓↓</text>
+    <text x="56" y="448">Wiederholung „Berlin"</text><text x="360" y="448">0.46</text><text x="440" y="448">0.34</text><text x="520" y="448" fill="#7dffb0">0.18</text><text x="578" y="448" fill="#7dffb0">✓↓</text>
+    <text x="56" y="472">Flüssigkeit DE/EN</text><text x="360" y="472">rau</text><text x="440" y="472">gut</text><text x="520" y="472" fill="#7dffb0">flüssig</text><text x="600" y="472" fill="#7dffb0">✓↑</text>
+    <text x="56" y="496">Sprachtrennung</text><text x="360" y="496" fill="#7dffb0">✓</text><text x="440" y="496" fill="#7dffb0">✓</text><text x="520" y="496" fill="#7dffb0">✓</text>
+    <text x="56" y="520">Fakt „Hauptstadt DE"</text><text x="358" y="520" fill="#ff8c8c">München</text><text x="438" y="520" fill="#7dffb0">Berlin</text><text x="516" y="520" fill="#ff8c8c">München</text>
+    <text x="56" y="538" font-size="10.5" fill="#ffb454">  → flip-flop = Fakt noch NICHT verankert ⚗</text>
+    <text x="56" y="562">Instruktion/Q&amp;A folgen</text><text x="360" y="562" fill="#ff8c8c">✗</text><text x="440" y="562" fill="#ff8c8c">✗</text><text x="520" y="562" fill="#ff8c8c">✗</text><text x="560" y="562" font-size="10" fill="#9fb0bf">(vor SFT erwartet)</text>
+  </g>
+  <line x1="56" y1="578" x2="634" y2="578" stroke="#3a2b54" stroke-width="1"/>
+  <text x="56" y="600" font-size="11.5" fill="#cda9ff">Befund: Sprache reift schnell ✓ — Wissen verankert sich noch nicht.</text>
+  <text x="56" y="618" font-size="11.5" fill="#cda9ff">Hebel = mehr/sauberere Daten + Skalierung (nicht mehr Steps).</text>
+
+  <!-- ===== D: maturity matrix ===== -->
+  <rect x="665" y="345" width="625" height="285" rx="5" fill="#0a1a12" stroke="#36f58c" stroke-width="2" filter="url(#g)"/>
+  <text x="681" y="368" font-size="13.5" font-weight="700" fill="#36f58c">REIFEGRAD DER KOMPONENTEN</text>
+  <text x="681" y="392" font-size="12.5" font-weight="700" fill="#7dffb0">✓ KLAPPT (getestet / gemessen)</text>
+  <text x="690" fill="#cdf7da" font-size="11.5">
+    <tspan x="690" y="410">• Stabiles Training (28L-Hybrid, val↓, 0 Alarme)</tspan>
+    <tspan x="690" y="427">• Bilinguale Flüssigkeit DE+EN, sauber getrennt</tspan>
+    <tspan x="690" y="444">• Sprach-Balance ~Parität (bpb 0.96 / 1.03)</tspan>
+    <tspan x="690" y="461">• Deterministische Eval + Guard-Fix + Step-0-Diagnose</tspan>
+    <tspan x="690" y="478">• Daten-Pipeline Stufe 1 (auf Stichprobe verifiziert)</tspan>
+    <tspan x="690" y="495">• Multi-GPU (DDP) · Architektur extern bestätigt (GPT/Gemini)</tspan>
+  </text>
+  <text x="681" y="520" font-size="12.5" font-weight="700" fill="#ffb454">⚗ IN ARBEIT / UNBEWIESEN</text>
+  <text x="690" fill="#ffe6c7" font-size="11.5">
+    <tspan x="690" y="538">• Fakten-Verankerung (schwach @25k, flip-flop)</tspan>
+    <tspan x="690" y="555">• knowledge_dna / kernel (Prototyp, bisher NO-GO)</tspan>
+    <tspan x="690" y="572">• DoRA/LoRA (auf GPT-2-Proxy ok, auf Helix offen)</tspan>
+  </text>
+  <text x="681" y="597" font-size="12.5" font-weight="700" fill="#7fe0ff">▷ GEPLANT</text>
+  <text x="690" fill="#c7eeff" font-size="11.5">
+    <tspan x="690" y="615">• SFT @ step 50k · Stufe-2 edu-Scoring (RP/HPLT) · Skalierung 3B→7B+</tspan>
+  </text>
+
+  <!-- ===== E: data pipeline ===== -->
+  <rect x="40" y="648" width="610" height="150" rx="5" fill="#1a1405" stroke="#ffb454" stroke-width="2" filter="url(#g)"/>
+  <text x="56" y="671" font-size="13.5" font-weight="700" fill="#ffb454">DATEN-PIPELINE (Ergebnisse)</text>
+  <text x="56" fill="#ffe6c7" font-size="12">
+    <tspan x="56" y="695">RedPajama-de: 9.98M Docs → 7.62M nach Form (Keep 76%)</tspan>
+    <tspan x="56" y="715">HPLT-de:      14.89M Docs → 13.04M nach Form (Keep 88%)</tspan>
+    <tspan x="56" y="735">Nach Wert (edu, RP-Stichprobe): ~29% des Rohmaterials übersteht beide Stufen</tspan>
+    <tspan x="56" y="755" fill="#fff0d8">74 GB saubere Prosa bereit für Stufe 2 (GPU-edu-Scoring)</tspan>
+    <tspan x="56" y="778" fill="#cdb88f">Stufe 1 = reine CPU (parallel, 16 Kerne) · v3-Training ungestört</tspan>
+  </text>
+
+  <!-- title block -->
+  <rect x="985" y="648" width="305" height="150" rx="3" fill="#081a12" stroke="#36f58c" stroke-width="1.8"/>
+  <line x1="985" y1="676" x2="1290" y2="676" stroke="#1f7d4d" stroke-width="1"/>
+  <text x="1000" y="668" font-size="12.5" font-weight="700" fill="#36f58c">AURALIS — SCHRIFTFELD</text>
+  <text fill="#9fe9bd" font-size="11">
+    <tspan x="1000" y="696">BLATT   · MESSDATEN / EVIDENZ (2 von 2)</tspan>
+    <tspan x="1000" y="714">STAND   · step ~33k / 50k</tspan>
+    <tspan x="1000" y="732">QUELLEN · det. Eval · eval_diagnostic · gen-probes</tspan>
+    <tspan x="1000" y="750">METRIK  · bpb (byte-normiert, fair)</tspan>
+    <tspan x="1000" y="768">NÄCHSTES· SFT @ 50k → erster Assistenz-Test</tspan>
+    <tspan x="1000" y="786">REV     · 2.0</tspan>
+  </text>
+</svg>

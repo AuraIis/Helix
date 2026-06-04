@@ -1,0 +1,37 @@
+backend: cuda12-llama-cpp
+function:
+    automatic_tool_parsing_fallback: true
+    grammar:
+        disable: true
+    capture_llm_results:
+        - (?s)<think>(.*?)</think>
+    replace_llm_results:
+        - key: (?s)<think>(.*?)</think>
+          value: ""
+known_usecases:
+    - FLAG_CHAT
+mmap: true
+mmproj: llama-cpp/mmproj/Qwen3.6-35B-A3B-GGUF/mmproj-F32.gguf
+name: qwen3.6-35b-a3b
+parameters:
+    min_p: 0.05
+    model: llama-cpp/models/Qwen3.6-35B-A3B-GGUF/Qwen3.6-35B-A3B-UD-Q4_K_M.gguf
+    presence_penalty: 0
+    repeat_penalty: 1.05
+    temperature: 0.3
+    top_k: 40
+    top_p: 0.9
+stopwords:
+    - <|im_end|>
+    - </s>
+template:
+    chat: |
+        {{.Input -}}
+        <|im_start|>assistant
+        <think>
+
+        </think>
+
+    chat_message: |
+        <|im_start|>{{ .RoleName }}
+        {{ .Content }}<|im_end|>

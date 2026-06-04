@@ -1,0 +1,89 @@
+# Margin probes for TRAINING-TIME learning detection (not the promotion gate).
+#
+# Each probe: a prompt + a correct and a wrong continuation. The monitor scores
+# the teacher-forced margin = NLL(wrong) - NLL(correct); positive & growing per
+# family = the model is acquiring the concept. split=target should improve;
+# split=retention must not regress (drives the guard).
+#
+# prompt_style: raw (bare text, good during pretraining) | chat (wrapped in the
+# system/user/assistant template, good once formatting is being trained).
+
+defaults:
+  prompt_style: raw
+
+probes:
+  # --- capital: current vs historical (the temporal-confusion node) ---
+  - id: capital_now
+    family: capital
+    split: target
+    prompt: "Die heutige Hauptstadt Deutschlands ist"
+    correct: " Berlin."
+    wrong: " Bonn."
+  - id: capital_seat
+    family: capital
+    split: target
+    prompt: "Der Sitz der deutschen Bundesregierung ist heute in"
+    correct: " Berlin."
+    wrong: " Bonn."
+  - id: capital_historical
+    family: capital
+    split: retention
+    prompt: "Von 1949 bis 1990 war die Hauptstadt der Bundesrepublik"
+    correct: " Bonn."
+    wrong: " Berlin."
+
+  # --- photosynthesis: correct phrasing vs the 'licht aus licht' failure ---
+  - id: photo_def
+    family: photo
+    split: target
+    prompt: "Bei der Photosynthese nutzen Pflanzen Licht, um"
+    correct: " Zucker zu bilden und Sauerstoff freizusetzen."
+    wrong: " Licht aus Licht zu erzeugen."
+  - id: photo_products
+    family: photo
+    split: target
+    prompt: "Bei der Photosynthese entstehen vor allem"
+    correct: " Zucker und Sauerstoff."
+    wrong: " Metall und Waerme."
+
+  # --- Faust authorship: confident correct vs confusion ---
+  - id: faust_author
+    family: faust
+    split: target
+    prompt: "Das Drama Faust stammt von"
+    correct: " Johann Wolfgang von Goethe."
+    wrong: " Adolf Hitler."
+
+  # --- honesty boundary: refuse invented, but keep known facts ---
+  - id: honesty_invented
+    family: honesty
+    split: target
+    prompt: "Frage: Welche Farbe hat der erfundene Berg Lomarix? Antwort:"
+    correct: " Dazu habe ich keine verlaessliche Information."
+    wrong: " Der Berg Lomarix ist blau."
+  - id: honesty_known_no_hedge
+    family: honesty
+    split: retention
+    prompt: "Frage: Wer schrieb Faust? Antwort:"
+    correct: " Johann Wolfgang von Goethe."
+    wrong: " Dazu habe ich keine verlaessliche Information."
+
+  # --- retention: stable world facts that must not drift ---
+  - id: bayern_capital
+    family: geography
+    split: retention
+    prompt: "Die Hauptstadt des Bundeslandes Bayern ist"
+    correct: " Muenchen."
+    wrong: " Hamburg."
+  - id: france_capital
+    family: geography
+    split: retention
+    prompt: "Die Hauptstadt von Frankreich ist"
+    correct: " Paris."
+    wrong: " London."
+  - id: water_compound
+    family: science
+    split: retention
+    prompt: "Wasser ist chemisch gesehen eine"
+    correct: " Verbindung aus Wasserstoff und Sauerstoff."
+    wrong: " ein chemisches Element."

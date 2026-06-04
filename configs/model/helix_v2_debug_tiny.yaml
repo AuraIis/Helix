@@ -1,0 +1,52 @@
+# Helix v2 debug-tiny model.
+#
+# This is not a production config. It keeps the real 200k tokenizer/head but
+# shrinks the hidden stack so structural overfit diagnostics finish quickly.
+
+name: helix_v2_debug_tiny
+version: "2.1.0-debug"
+
+tokenizer:
+  path: "tokenizer/helix_v2_tokenizer.model"
+  vocab_size: 200000
+
+model:
+  d_model: 128
+  n_layers: 4
+  n_heads: 4
+  d_head: 32
+  d_ffn: 384
+  activation: silu
+  norm_type: rmsnorm
+  norm_eps: 1.0e-6
+
+layers:
+  - {type: mamba, d_state: 32, d_conv: 4, expand_factor: 2, dt_min: 0.001, dt_max: 0.1}
+  - {type: gla, d_state: 32}
+  - {type: sparse_attention, window_size: 64, global_tokens: 0, use_rope: true, qk_norm: true}
+  - {type: gla, d_state: 32}
+
+ffn:
+  type: dense
+  activation: silu_gated
+
+moe: {enabled: false}
+mtp: {enabled: false, n_heads: 1}
+
+position_encoding:
+  type: rope
+  theta: 10000.0
+  max_seq_length: 256
+
+init:
+  scheme: scaled_normal
+  init_std: 0.02
+  embedding_init_std: 0.02
+  output_init_scale: 0.5
+
+dropout: {embedding: 0.0, attention: 0.0, ffn: 0.0, residual: 0.0}
+
+advanced:
+  tie_embeddings: true
+  use_flash_attention: false
+  gradient_checkpointing: false

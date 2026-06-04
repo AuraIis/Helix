@@ -1,0 +1,61 @@
+# Helix v2 — 1B production model.
+#
+# Heterogeneous 28-layer stack: 6 Mamba-2 + 16 GLA + 6 Sparse Attention.
+# Parameter estimate ~954M with tied embeddings (200k vocab dominates).
+# d_model=1280 chosen so n_heads * d_head = d_model cleanly and the final
+# size stays close to the "1B" target (1280 ≈ 1.25 * 1024, canonical SP).
+
+name: helix_v2_1b
+version: "2.0.0"
+
+tokenizer:
+  path: "tokenizer/helix_v2_tokenizer.model"
+  vocab_size: 200000
+
+model:
+  d_model: 1280
+  n_layers: 28
+  n_heads: 10         # 10 * 128 = 1280 ✓
+  d_head: 128
+  d_ffn: 3584         # ~2.8x d_model
+  activation: silu
+  norm_type: rmsnorm
+  norm_eps: 1.0e-6
+
+layers:
+  - {repeat: 6,  config: {type: mamba,           d_state: 128, d_conv: 4, expand_factor: 2, dt_min: 0.001, dt_max: 0.1}}
+  - {repeat: 16, config: {type: gla,             d_state: 128}}
+  - {repeat: 6,  config: {type: sparse_attention, window_size: 1024, global_tokens: 32, use_rope: true}}
+
+ffn:
+  type: dense
+  activation: silu_gated
+
+moe:
+  enabled: false
+
+mtp:
+  enabled: false
+  n_heads: 1
+
+position_encoding:
+  type: rope
+  theta: 10000.0
+  max_seq_length: 8192
+
+init:
+  scheme: scaled_normal
+  init_std: 0.02
+  embedding_init_std: 0.02
+  output_init_scale: 0.5
+
+dropout:
+  embedding: 0.0
+  attention: 0.0
+  ffn: 0.0
+  residual: 0.0
+
+advanced:
+  tie_embeddings: true
+  use_flash_attention: true
+  gradient_checkpointing: false

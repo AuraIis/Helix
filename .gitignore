@@ -1,0 +1,121 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# --- IDE ---
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# --- Claude Code local state ---
+.claude/
+
+# --- Auralis: grosse Artefakte NIE committen ---
+# We block both the canonical /data/* layout AND root-level data dirs that
+# accumulate from in-place pipelines (raw/, cleaned/, tokenized/, …).
+# Codex P1 audit: previously only data/* was guarded, leaving root paths
+# vulnerable to a stray `git add -A`.
+#
+# Root-level data directories (Phase-1 + Phase-2 pipelines write here).
+# NOTE: leading `/` anchors each pattern to the repo root. Without it,
+# git matches *recursively*, which silently swallows e.g.
+# `tests/training/`, `src/auralis/training/`, `configs/training/`
+# (Codex 2nd-pass P1).
+/raw/
+/cleaned/
+/tokenized/
+/training/
+/seeds/
+/tokenizer_corpus/
+/phase2_raw/
+/phase3_sft_raw/
+/phase4_dpo_raw/
+/eval_redpajama_v2/
+
+# Canonical /data layout (preserve folder structure via .gitkeep):
+data/raw/*
+!data/raw/.gitkeep
+data/cleaned/*
+!data/cleaned/.gitkeep
+data/training/*
+!data/training/.gitkeep
+
+# Eval-Ergebnisse (werden pro Run frisch erzeugt)
+eval/results/*
+!eval/results/.gitkeep
+
+# Checkpoints
+checkpoints/*
+!checkpoints/.gitkeep
+
+# Tokenizer-Artefakte: das trainierte Helix-v2-SP-Modell ist der
+# kanonische Artefakt und MUSS versioniert sein (~4 MB). Nur Nebenläufer
+# ignorieren wir (z.B. .tmp während Training).
+tokenizer/*.model.tmp
+tokenizer/*.vocab.tmp
+
+# WandB lokale Logs
+wandb/
+
+# --- Large model artefacts (binary, never commit) ---
+*.safetensors
+*.bin
+*.idx
+*.pt
+*.pth
+*.ckpt
+*.gguf
+*.tar
+*.tar.gz
+*.tmp
+
+# --- HF cache, in case ever materialized inside repo ---
+.hf_cache/
+.huggingface/
+
+# --- Environment / Secrets ---
+.env
+.env.*
+!.env.example
+*.key
+*.token
+.hf_token
+credentials.json
+
+# --- Laufzeit ---
+*.log
+logs/
+tmp/
+.cache/
+
+# --- Large untracked data/output dirs (root-level, added 2026-05-31) ---
+# Source code, configs, docs and reports ARE versioned. Raw data, audit
+# dumps and SFT training outputs are not (157 GB data/, multi-GB sft_train/).
+/data/eval/
+/data/book_sources_v1/
+/data/pretrain_1b_sources_v1/
+/sft_train/
+/sft_train_balanced/
+
+# Data/machine artifacts mis-filed under reports/ (corpus candidates, profiler
+# traces, reject-sample dumps) — keep the .md/.json analyses, drop the blobs.
+reports/**/*candidate*50k*.txt
+reports/**/*.reject_samples.jsonl
+reports/perf/**/trace.json
+

@@ -1,0 +1,58 @@
+# Helix v2 — 500M "mid" canary (faithful small twin of the 1B).
+#
+# User-specified spec for the 250M->1B de-risking wave. With a 200k vocab
+# and tied embeddings the spec lands at ~517M params (embedding alone is
+# 205M), not 250M — see docs/TRAINING_WAVES.md for the arithmetic.
+#
+# This file preserves the user's intended architecture (wider + more layers
+# than helix_v2_250m.yaml) so the canary is as close to the 1B hybrid stack
+# as possible. If token budget matters more than fidelity, use
+# helix_v2_250m.yaml (261M) instead.
+
+name: helix_v2_mid_500m
+version: "2.0.0"
+
+tokenizer:
+  path: "tokenizer/helix_v2_tokenizer.model"
+  vocab_size: 200000
+
+model:
+  d_model: 1024
+  n_layers: 20
+  n_heads: 16           # 16 * 64 = 1024 ✓
+  d_head: 64
+  d_ffn: 2816           # 2.75x d_model
+  activation: silu
+  norm_type: rmsnorm
+  norm_eps: 1.0e-6
+
+# 20 layers: 4 Mamba + 12 GLA + 4 Sparse — scaled-down 6/16/6 of the 1B.
+layers:
+  - {repeat: 4,  config: {type: mamba,            d_state: 64, d_conv: 4, expand_factor: 2, dt_min: 0.001, dt_max: 0.1}}
+  - {repeat: 12, config: {type: gla,              d_state: 64}}
+  - {repeat: 4,  config: {type: sparse_attention, window_size: 1024, global_tokens: 16, use_rope: true}}
+
+ffn:
+  type: dense
+  activation: silu_gated
+
+moe: {enabled: false}
+mtp: {enabled: false, n_heads: 1}
+
+position_encoding:
+  type: rope
+  theta: 10000.0
+  max_seq_length: 2048
+
+init:
+  scheme: scaled_normal
+  init_std: 0.02
+  embedding_init_std: 0.02
+  output_init_scale: 0.5
+
+dropout: {embedding: 0.0, attention: 0.0, ffn: 0.0, residual: 0.0}
+
+advanced:
+  tie_embeddings: true
+  use_flash_attention: true
+  gradient_checkpointing: true   # canaries default ON, trades compute for memory

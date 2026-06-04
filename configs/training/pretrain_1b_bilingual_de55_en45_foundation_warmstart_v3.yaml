@@ -1,0 +1,117 @@
+experiment:
+  name: helix_v2_1b_bilingual_de55_en45_foundation_warmstart_v3
+  version: "0.1"
+  description: >
+    Relaunch v3 — FIX for the warm-start destabilization seen in v2. v2 re-ramped
+    to the full from-scratch LR (1.5e-4) on an already well-trained checkpoint
+    (bpb_de 1.172), which perturbed it: val_loss for BOTH languages rose after the
+    LR peak. v3 uses a low continuation/annealing LR (3e-5, short warmup 200) so the
+    good checkpoint is gently improved rather than pushed off its optimum. Same data
+    (expanded clean German, 3.24B), same warm-start source, separate output_dir.
+    NOTE: the German val set is currently Wikipedia-only (last-concatenated source),
+    so val_loss_german/bpb_german measure wiki-German specifically — fix the val
+    composition (representative sampling) before trusting it as the broad-mix signal.
+
+model:
+  config_path: "configs/model/helix_v2_1b.yaml"
+
+data:
+  data_dir: "/workspace/v2data/tokenized/curated_40b"
+  mix_ratios:
+    german: 0.55
+    english: 0.45
+  seq_length: 2048
+  val_split_bytes: 8_000_000
+  dataloader_seed: 20260601
+
+training:
+  device: "cuda"
+  dtype: "bfloat16"
+  matmul_precision: "high"
+  kernels:
+    enabled: true
+    mamba: true
+    gla: true
+    flash_attention: true
+
+  optimizer:
+    name: adamw
+    lr: 3.0e-5
+    betas: [0.9, 0.95]
+    weight_decay: 0.05
+    eps: 1.0e-8
+    fused: true
+
+  scheduler:
+    type: cosine
+    warmup_steps: 200
+    min_lr_ratio: 0.10
+
+  batch_size_per_device: 1
+  gradient_accumulation: 32
+  gradient_clip_norm: 1.0
+  total_steps: 50000
+
+  gradient_checkpointing: true
+  torch_compile: false
+
+logging:
+  log_every: 5
+  eval_every: 250
+  save_every: 1000
+  wandb:
+    enabled: false
+    project: "auralis-v2"
+    tags: ["1b", "foundation", "bilingual", "de55-en45", "warmstart", "v3", "low-lr-continuation"]
+
+checkpointing:
+  output_dir: "/workspace/v2data/checkpoints/pretrain_1b_bilingual_de55_en45_foundation_warmstart_v3"
+  save_last_n: 6
+  save_best: true
+  skip_step_save_if_checkpoint_written: true
+  external_backup:
+    enabled: false
+    path: ""
+    interval_steps: 1000
+
+evaluation:
+  max_val_batches: 50
+  per_language_batches: 20
+  tokens_per_byte:
+    english: 0.1962   # measured from english.bin (was 0.1990)
+    german: 0.1757    # measured from german.bin (was 0.2338 — inflated bpb_de ~33%)
+
+monitoring:
+  health:
+    grad_explosion_threshold: 100.0
+    val_regression_stop_k: 5
+    # Tolerance (nats): a val change below this is noise, not a real rise.
+    # With the now-deterministic eval the val curve is smooth, so a genuine
+    # rise is a real signal; this guards against tripping on sub-noise wobble.
+    val_min_delta: 0.01
+    bpb_regression_enabled: true
+    bpb_regression_languages: ["english", "german"]
+    bpb_regression_max_increase: 0.25
+    bpb_regression_k: 2
+    bpb_regression_lookback: 4
+    bpb_regression_warmup_evals: 3
+
+decision_points:
+  inspect_at_steps:
+    - 250
+    - 500
+    - 1000
+    - 2500
+    - 5000
+    - 10000
+    - 25000
+    - 50000
+  continue_if:
+    - no_nan_inf_oom_or_temperature_alarm
+    - grad_norm_stays_below_threshold
+    - bpb_german_and_bpb_english_both_improve_or_stay_stable
+    - free_generation_repetition_trends_down_over_checkpoints
+  stop_and_replan_if:
+    - bpb_german_or_english_regresses_for_multiple_evals
+    - aggregate_val_loss_regresses_persistently
+    - sample_generation_quality_collapses

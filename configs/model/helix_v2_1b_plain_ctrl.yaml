@@ -1,0 +1,65 @@
+# Plain-attention CONTROL for the architecture A/B.
+#
+# Same backbone dims as helix_v2_1b (d_model 1280, 28 layers, 200k vocab, tied
+# embeddings) — but EVERY layer is plain causal softmax attention (no Mamba,
+# no GLA, no sparse). Train this with the *same* training config as the Helix
+# run and overlay the loss/bpb curve at the same steps:
+#   - plain attention learns clearly faster -> the hybrid stack (or its
+#     kernels/init) is the bottleneck.
+#   - they learn about equally -> it is NOT the architecture; the slow learning
+#     is data / LR / under-training.
+# Param count differs slightly from the hybrid (~same ballpark, ~0.8-0.9B),
+# which is fine for a learning-SPEED comparison.
+
+name: helix_v2_1b_plain_ctrl
+version: "2.0.0"
+
+tokenizer:
+  path: "tokenizer/helix_v2_tokenizer.model"
+  vocab_size: 200000
+
+model:
+  d_model: 1280
+  n_layers: 28
+  n_heads: 10         # 10 * 128 = 1280
+  d_head: 128
+  d_ffn: 3584
+  activation: silu
+  norm_type: rmsnorm
+  norm_eps: 1.0e-6
+
+layers:
+  - {repeat: 28, config: {type: plain_attention, use_rope: true}}
+
+ffn:
+  type: dense
+  activation: silu_gated
+
+moe:
+  enabled: false
+
+mtp:
+  enabled: false
+  n_heads: 1
+
+position_encoding:
+  type: rope
+  theta: 10000.0
+  max_seq_length: 8192
+
+init:
+  scheme: scaled_normal
+  init_std: 0.02
+  embedding_init_std: 0.02
+  output_init_scale: 0.5
+
+dropout:
+  embedding: 0.0
+  attention: 0.0
+  ffn: 0.0
+  residual: 0.0
+
+advanced:
+  tie_embeddings: true
+  use_flash_attention: true
+  gradient_checkpointing: false

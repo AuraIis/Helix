@@ -1,0 +1,160 @@
+name: learning_trace_de_repair_v2
+version: 2
+description: >
+  Expanded diagnostic/training probes for German response repair. This file is
+  not a promotion eval. It adds target continuations that begin like the model's
+  common wrong generations, so contrastive training can redirect the decoding
+  path instead of only preferring a different first sentence.
+
+defaults:
+  max_new_tokens: 64
+
+probes:
+  - id: de_capital_current
+    category: geography
+    prompt: "Was ist die Hauptstadt von Deutschland?"
+    target_answers:
+      - "Die Hauptstadt von Deutschland ist Berlin.\n<|end|>\n"
+      - "Berlin ist die Hauptstadt von Deutschland.\n<|end|>\n"
+    negative_answers:
+      - "Die Hauptstadt von Deutschland ist Bonn.\n<|end|>\n"
+      - "Ja. Bonn ist die Hauptstadt von Deutschland.\n<|end|>\n"
+    expect_contains: ["berlin"]
+    forbid_contains: ["bonn ist die hauptstadt"]
+
+  - id: bonn_current_trap
+    category: hallucination_guard
+    prompt: "Ist Bonn heute die Hauptstadt von Deutschland?"
+    target_answers:
+      - "Nein. Die Hauptstadt von Deutschland ist Berlin.\n<|end|>\n"
+      - "Nein. Bonn war frueher Hauptstadt; heute ist Berlin die Hauptstadt Deutschlands.\n<|end|>\n"
+    negative_answers:
+      - "Ja. Bonn ist die Hauptstadt von Deutschland.\n<|end|>\n"
+      - "Bonn ist die Hauptstadt von Deutschland.\n<|end|>\n"
+    expect_contains: ["nein", "berlin"]
+    forbid_contains: ["ja. bonn", "bonn ist die hauptstadt"]
+
+  - id: bonn_or_berlin_choice
+    category: hallucination_guard
+    prompt: "Welche Stadt ist heute Hauptstadt Deutschlands, Bonn oder Berlin?"
+    target_answers:
+      - "Berlin ist heute die Hauptstadt Deutschlands.\n<|end|>\n"
+      - "Heute ist Berlin die Hauptstadt von Deutschland; Bonn war frueher Hauptstadt.\n<|end|>\n"
+    negative_answers:
+      - "Ja. Bonn ist die Hauptstadt von Deutschland.\n<|end|>\n"
+      - "Bonn ist heute die Hauptstadt Deutschlands.\n<|end|>\n"
+    expect_contains: ["berlin"]
+    forbid_contains: ["bonn ist die hauptstadt", "ja. bonn"]
+
+  - id: bern_positive
+    category: geography
+    prompt: "Ist Bern die Hauptstadt der Schweiz?"
+    target_answers:
+      - "Ja. Bern ist die Hauptstadt der Schweiz.\n<|end|>\n"
+      - "Bern ist die Hauptstadt der Schweiz.\n<|end|>\n"
+    negative_answers:
+      - "Nein. Die Hauptstadt der Schweiz ist Bern.\n<|end|>\n"
+      - "Zuerich ist die Hauptstadt der Schweiz.\n<|end|>\n"
+    expect_contains: ["bern", "schweiz"]
+    forbid_contains: ["nein", "zuerich ist die hauptstadt"]
+
+  - id: wien_positive
+    category: geography
+    prompt: "Ist Wien die Hauptstadt von Oesterreich?"
+    target_answers:
+      - "Ja. Wien ist die Hauptstadt von Oesterreich.\n<|end|>\n"
+      - "Wien ist die Hauptstadt von Oesterreich.\n<|end|>\n"
+    negative_answers:
+      - "Nein. Wien ist die Hauptstadt von Oesterreich.\n<|end|>\n"
+      - "Die Hauptstadt von Oesterreich ist nicht Wien.\n<|end|>\n"
+    expect_contains: ["wien", "oesterreich"]
+    forbid_contains: ["nein"]
+
+  - id: hamburg_bavaria_trap
+    category: hallucination_guard
+    prompt: "Ist Hamburg die Hauptstadt von Bayern?"
+    target_answers:
+      - "Nein. Die Hauptstadt von Bayern ist Muenchen.\n<|end|>\n"
+      - "Nein. Hamburg ist nicht die Hauptstadt von Bayern; Muenchen ist die Hauptstadt.\n<|end|>\n"
+    negative_answers:
+      - "Nein. Hamburg ist die Hauptstadt von Bayern.\n<|end|>\n"
+      - "Ja. Hamburg ist die Hauptstadt von Bayern.\n<|end|>\n"
+    expect_contains: ["nein", "muenchen"]
+    forbid_contains: ["hamburg ist die hauptstadt", "ja. hamburg"]
+
+  - id: water_not_element
+    category: science
+    prompt: "Ist Wasser ein chemisches Element?"
+    target_answers:
+      - "Nein. Wasser ist eine chemische Verbindung aus Wasserstoff und Sauerstoff.\n<|end|>\n"
+      - "Nein. Wasser ist kein Element, sondern eine Verbindung.\n<|end|>\n"
+    negative_answers:
+      - "Ja. Wasser ist ein chemisches Element.\n<|end|>\n"
+      - "Wasser ist ein chemisches Element.\n<|end|>\n"
+    expect_contains: ["nein", "verbindung"]
+    forbid_contains: ["wasser ist ein chemisches element"]
+
+  - id: photosynthesis_core
+    category: science
+    prompt: "Was passiert bei der Photosynthese?"
+    target_answers:
+      - "Pflanzen nutzen Licht, um Zucker zu bilden, und setzen Sauerstoff frei.\n<|end|>\n"
+      - "Bei der Photosynthese bilden Pflanzen mit Licht Zucker und Sauerstoff.\n<|end|>\n"
+      - "Die Photosynthese ist ein Prozess, bei dem Pflanzen Licht nutzen, um Zucker zu bilden und Sauerstoff freizusetzen.\n<|end|>\n"
+      - "Die Photosynthese ist eine biologische Reaktion, bei der Pflanzen mit Licht Zucker herstellen und Sauerstoff abgeben.\n<|end|>\n"
+    negative_answers:
+      - "Die Photosynthese ist eine chemische Reaktion auf Licht, bei der sich Licht aus Licht und Sauerstoff bildet.\n<|end|>\n"
+      - "Bei der Photosynthese entsteht Metall durch Waerme.\n<|end|>\n"
+      - "Die Photosynthese ist eine chemische Verbindung zwischen Licht und Sauerstoff.\n<|end|>\n"
+    expect_contains: ["pflanzen", "licht"]
+    forbid_contains: ["metall", "licht aus licht", "verbindung zwischen licht"]
+
+  - id: photosynthesis_plants_do
+    category: science
+    prompt: "Was leisten Pflanzen durch Photosynthese?"
+    target_answers:
+      - "Pflanzen nutzen Licht, um Zucker herzustellen, und geben Sauerstoff ab.\n<|end|>\n"
+      - "Durch Photosynthese bilden Pflanzen Zucker und setzen Sauerstoff frei.\n<|end|>\n"
+      - "Pflanzen wandeln mit Licht Wasser und Kohlendioxid in Zucker um; dabei entsteht Sauerstoff.\n<|end|>\n"
+    negative_answers:
+      - "Pflanzen sind fuer die Photosynthese von entscheidender Bedeutung.\n<|end|>\n"
+      - "Die Photosynthese ist eine chemische Reaktion, bei der Licht aus Licht entsteht.\n<|end|>\n"
+    expect_contains: ["pflanzen", "zucker"]
+    forbid_contains: ["entscheidender bedeutung", "licht aus licht"]
+
+  - id: faust_author
+    category: literature
+    prompt: "Wer ist der Verfasser von Faust?"
+    target_answers:
+      - "Der Verfasser von Faust ist Johann Wolfgang von Goethe.\n<|end|>\n"
+      - "Faust stammt von Johann Wolfgang von Goethe.\n<|end|>\n"
+    negative_answers:
+      - "Faust ist ein deutscher KI-Assistent.\n<|end|>\n"
+      - "Faust stammt von Adolf Hitler.\n<|end|>\n"
+      - "Ich kenne keine verlaesslichen Quellen.\n<|end|>\n"
+    expect_contains: ["goethe"]
+    forbid_contains: ["ki-assistent", "hitler"]
+
+  - id: faust_author_short
+    category: literature
+    prompt: "Nenne kurz den Autor des Dramas Faust."
+    target_answers:
+      - "Der Autor von Faust ist Johann Wolfgang von Goethe.\n<|end|>\n"
+      - "Faust wurde von Johann Wolfgang von Goethe geschrieben.\n<|end|>\n"
+    negative_answers:
+      - "Ich kenne keine verlaesslichen Quellen.\n<|end|>\n"
+      - "Faust stammt von Adolf Hitler.\n<|end|>\n"
+    expect_contains: ["goethe"]
+    forbid_contains: ["hitler", "keine verlaesslichen"]
+
+  - id: unknown_entity_honesty
+    category: honesty
+    prompt: "Welche Farbe hatte der erfundene Planet Zelvorn?"
+    target_answers:
+      - "Dazu habe ich keine verlaessliche Information. Zelvorn klingt erfunden oder unklar.\n<|end|>\n"
+      - "Das weiss ich nicht verlaesslich; ich sollte keine Details erfinden.\n<|end|>\n"
+    negative_answers:
+      - "Zelvorn war blau.\n<|end|>\n"
+      - "Zelvorn ist eine rote Farbe.\n<|end|>\n"
+    expect_contains: ["keine"]
+    forbid_contains: ["war blau", "rote farbe", "abkuerzung", "abkürzung", "hintergrundfarbe", "planet)"]

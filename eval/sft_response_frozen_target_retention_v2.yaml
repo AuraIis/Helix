@@ -1,0 +1,566 @@
+name: sft_response_frozen_target_retention_v2
+version: 2
+description: >
+  Frozen, never-train eval for German response repair, v2. Superset of v1
+  (every v1 probe is kept verbatim and nothing was loosened -> append-only),
+  widened to ~25 target and ~25 retention probes with more vocabulary variants
+  and more confident-fact-vs-refusal pairs.
+
+  Model-agnostic on purpose: run it on the 500M checkpoints to lock a robust
+  baseline reference, then reuse THIS EXACT file as the 1B promotion gate so the
+  two model sizes are directly comparable.
+
+  Discipline rules:
+  - Never include any of these prompts (or paraphrases) in training data.
+  - Re-run the leak check (frozen_response_gate.py --check-train ...) whenever a
+    new training set is added; a single collision invalidates the gate.
+  - This file is append-only: you may ADD probes, never weaken an existing one to
+    turn a candidate green.
+  - Scoring uses only semantic_must / semantic_any_groups / semantic_forbid /
+    semantic_polarity. expect_any is documentation only (the gate ignores it).
+  - promotable = ALL target pass AND ALL retention pass. One retention
+    regression => not promotable.
+
+defaults:
+  max_new_tokens: 64
+  prompt_style: chat
+
+probes:
+  # ---------------------------------------------------------------------------
+  # TARGET probes: fragile concepts that should IMPROVE (not exact train prompts)
+  # ---------------------------------------------------------------------------
+
+  # --- v1 target probes (kept verbatim) ---
+  - id: target_photo_leaf_energy
+    split: target
+    category: science
+    prompt: "Wie nutzen grüne Blätter Licht, um Nahrung zu bilden?"
+    expect_any: ["pflanzen", "licht", "zucker", "sauerstoff"]
+    expect_all: ["licht"]
+    semantic_must: ["licht"]
+    semantic_any_groups:
+      - ["pflanzen", "zucker"]
+      - ["blatt", "zucker"]
+      - ["pflanzen", "sauerstoff"]
+    semantic_forbid: ["licht aus licht", "metall", "waerme", "wärme", "pflanzen mit licht bilden"]
+
+  - id: target_photo_products
+    split: target
+    category: science
+    prompt: "Welche Produkte entstehen, wenn Pflanzen Photosynthese betreiben?"
+    expect_any: ["zucker", "sauerstoff", "glucose"]
+    semantic_any_groups:
+      - ["zucker", "sauerstoff"]
+      - ["glucose", "sauerstoff"]
+    semantic_forbid: ["licht aus licht", "chemische verbindung zwischen licht", "metall"]
+
+  - id: target_photo_short
+    split: target
+    category: science
+    prompt: "Fasse Photosynthese biologisch korrekt in einem Satz zusammen."
+    expect_any: ["pflanzen", "licht", "zucker", "sauerstoff"]
+    semantic_must: ["licht"]
+    semantic_any_groups:
+      - ["pflanzen", "zucker"]
+      - ["pflanzen", "sauerstoff"]
+      - ["zucker", "sauerstoff"]
+    semantic_forbid: ["licht aus licht", "pflanzen mit licht bilden", "metall"]
+
+  - id: target_faust_known_fact
+    split: target
+    category: literature
+    prompt: "Welchem deutschen Autor ordnet man das Drama Faust zu?"
+    expect_any: ["goethe", "johann wolfgang"]
+    semantic_must: ["goethe"]
+    semantic_forbid: ["hitler", "keine verlaessliche", "keine verlässliche", "weiss ich nicht", "weiß ich nicht"]
+
+  - id: target_faust_confident
+    split: target
+    category: literature
+    prompt: "Ist die Autorschaft von Faust eine bekannte Tatsache, und wer ist es?"
+    expect_any: ["ja", "goethe", "johann wolfgang"]
+    semantic_must: ["goethe"]
+    semantic_forbid: ["unsicher", "keine verlaessliche", "keine verlässliche", "hitler"]
+
+  - id: target_current_capital_choice
+    split: target
+    category: geography
+    prompt: "Wenn heute zwischen Bonn und Berlin gewählt werden muss: Welche Stadt ist Deutschlands Hauptstadt?"
+    expect_any: ["berlin"]
+    semantic_must: ["berlin"]
+    semantic_forbid: ["bonn ist die hauptstadt", "ja. bonn", "bonn ist heute"]
+
+  # --- v2 new target probes: photosynthesis (more angles / vocabulary) ---
+  - id: target_photo_inputs
+    split: target
+    category: science
+    prompt: "Welche Ausgangsstoffe nimmt eine Pflanze für die Photosynthese auf?"
+    expect_any: ["wasser", "kohlendioxid", "kohlenstoffdioxid", "co2"]
+    semantic_any_groups:
+      - ["wasser", "kohlendioxid"]
+      - ["wasser", "kohlenstoffdioxid"]
+      - ["wasser", "co2"]
+    semantic_forbid: ["licht aus licht", "metall", "waerme"]
+
+  - id: target_photo_light_role
+    split: target
+    category: science
+    prompt: "Welche Rolle spielt das Licht bei der Photosynthese?"
+    expect_any: ["energie", "zucker", "nutzen"]
+    semantic_must: ["licht"]
+    semantic_any_groups:
+      - ["energie"]
+      - ["zucker"]
+      - ["nutzt"]
+      - ["nutzen"]
+      - ["antrieb"]
+    semantic_forbid: ["licht aus licht", "entsteht licht", "metall"]
+
+  - id: target_photo_oxygen_byproduct
+    split: target
+    category: science
+    prompt: "Was geben Pflanzen bei der Photosynthese an die Luft ab?"
+    expect_any: ["sauerstoff"]
+    semantic_must: ["sauerstoff"]
+    semantic_forbid: ["metall", "nehmen sauerstoff auf", "geben kohlendioxid"]
+
+  - id: target_photo_glucose
+    split: target
+    category: science
+    prompt: "Welcher energiereiche Stoff wird bei der Photosynthese aufgebaut?"
+    expect_any: ["zucker", "glucose", "glukose", "traubenzucker", "kohlenhydrat"]
+    semantic_any_groups:
+      - ["zucker"]
+      - ["glucose"]
+      - ["glukose"]
+      - ["traubenzucker"]
+      - ["kohlenhydrat"]
+    semantic_forbid: ["metall", "sauerstoff aufgebaut"]
+
+  - id: target_photo_plants_need
+    split: target
+    category: science
+    prompt: "Was braucht eine grüne Pflanze, damit Photosynthese ablaufen kann?"
+    expect_any: ["licht", "wasser", "kohlendioxid", "co2", "sonne"]
+    semantic_any_groups:
+      - ["licht", "wasser"]
+      - ["licht", "kohlendioxid"]
+      - ["licht", "co2"]
+      - ["sonne", "wasser"]
+    semantic_forbid: ["licht aus licht", "metall"]
+
+  - id: target_photo_purpose
+    split: target
+    category: science
+    prompt: "Warum betreiben Pflanzen überhaupt Photosynthese?"
+    expect_any: ["energie", "nahrung", "zucker", "naehrstoff"]
+    semantic_any_groups:
+      - ["energie"]
+      - ["nahrung"]
+      - ["zucker"]
+      - ["naehrstoff"]
+    semantic_forbid: ["licht aus licht", "metall", "waerme"]
+
+  - id: target_photo_chlorophyll
+    split: target
+    category: science
+    prompt: "Was macht der grüne Farbstoff in den Blättern bei der Photosynthese?"
+    expect_any: ["licht", "aufnehmen", "absorbiert", "fangen", "nutzt"]
+    semantic_must: ["licht"]
+    semantic_any_groups:
+      - ["aufnehmen"]
+      - ["aufnimmt"]
+      - ["aufgenommen"]
+      - ["nimmt"]
+      - ["absorbiert"]
+      - ["fangen"]
+      - ["faengt"]
+      - ["nutzt"]
+      - ["nutzen"]
+    semantic_forbid: ["licht aus licht", "metall"]
+
+  - id: target_photo_not_light_from_light
+    split: target
+    category: science
+    prompt: "Stimmt es, dass bei der Photosynthese Licht aus Licht entsteht?"
+    expect_any: ["nein", "nicht", "energie"]
+    semantic_polarity: "no"
+    semantic_must: ["licht"]
+    semantic_any_groups:
+      - ["nein"]
+      - ["nicht"]
+      - ["falsch"]
+      - ["energie"]
+      - ["nutzen"]
+    semantic_forbid: ["licht aus licht", "ja stimmt", "ja, das stimmt"]
+
+  - id: target_photo_water_role
+    split: target
+    category: science
+    prompt: "Welche Rolle spielt Wasser bei der Photosynthese?"
+    expect_any: ["wasser", "sauerstoff", "wasserstoff", "spalt"]
+    semantic_must: ["wasser"]
+    semantic_any_groups:
+      - ["spalt"]
+      - ["zerlegt"]
+      - ["sauerstoff"]
+      - ["wasserstoff"]
+      - ["baustein"]
+      - ["genutzt"]
+      - ["verbraucht"]
+    semantic_forbid: ["metall", "licht aus licht"]
+
+  - id: target_photo_sugar_from
+    split: target
+    category: science
+    prompt: "Aus welchen Stoffen baut die Pflanze bei der Photosynthese Zucker auf?"
+    expect_any: ["wasser", "kohlendioxid", "co2", "kohlenstoffdioxid"]
+    semantic_any_groups:
+      - ["wasser", "kohlendioxid"]
+      - ["wasser", "co2"]
+      - ["wasser", "kohlenstoffdioxid"]
+    semantic_forbid: ["metall", "licht aus licht", "aus zucker"]
+
+  # --- v2 new target probes: literature (Faust -> Goethe, confident) ---
+  - id: target_faust_author_simple
+    split: target
+    category: literature
+    prompt: "Nenne den Verfasser des Dramas Faust."
+    expect_any: ["goethe", "johann wolfgang"]
+    semantic_must: ["goethe"]
+    semantic_forbid: ["hitler", "keine verlaessliche", "keine verlässliche", "unsicher", "weiss ich nicht"]
+
+  - id: target_faust_epoch
+    split: target
+    category: literature
+    prompt: "Aus wessen Feder stammt das Werk Faust?"
+    expect_any: ["goethe", "johann wolfgang"]
+    semantic_must: ["goethe"]
+    semantic_forbid: ["hitler", "ki assistent", "unsicher", "keine verlaessliche", "keine verlässliche"]
+
+  - id: target_goethe_confident_yesno
+    split: target
+    category: literature
+    prompt: "Ist es gesichert, dass Goethe Faust verfasst hat?"
+    expect_any: ["ja", "goethe"]
+    semantic_polarity: "yes"
+    semantic_must: ["goethe"]
+    semantic_forbid: ["unsicher", "keine verlaessliche", "keine verlässliche", "hitler"]
+
+  - id: target_faust_not_ai
+    split: target
+    category: literature
+    prompt: "Ist Faust ein KI-Assistent oder ein literarisches Werk?"
+    expect_any: ["werk", "drama", "literarisch", "goethe"]
+    semantic_must: ["goethe"]
+    semantic_any_groups:
+      - ["werk"]
+      - ["drama"]
+      - ["literarisch"]
+    semantic_forbid: ["faust ist ein ki", "faust ist eine ki", "faust ist ein assistent"]
+
+  # --- v2 new target probes: Bonn/Berlin current capital ---
+  - id: target_capital_germany_direct
+    split: target
+    category: geography
+    prompt: "Was ist heute die Hauptstadt von Deutschland?"
+    expect_any: ["berlin"]
+    semantic_must: ["berlin"]
+    semantic_forbid: ["bonn ist die hauptstadt", "bonn ist heute", "hauptstadt ist bonn"]
+
+  - id: target_capital_seat_government
+    split: target
+    category: geography
+    prompt: "In welcher Stadt sitzt heute die deutsche Bundesregierung?"
+    expect_any: ["berlin"]
+    semantic_must: ["berlin"]
+    # NOTE: do not forbid the bare substring "in bonn" -> a correct answer may
+    # legitimately say "nicht mehr in Bonn". Only forbid the wrong claim forms.
+    semantic_forbid: ["bonn ist die hauptstadt", "regierung sitzt in bonn"]
+
+  - id: target_bonn_today_no
+    split: target
+    category: geography
+    prompt: "Ist Bonn heute die Hauptstadt Deutschlands?"
+    expect_any: ["nein", "berlin"]
+    semantic_polarity: "no"
+    semantic_must: ["berlin"]
+    semantic_forbid: ["bonn ist die hauptstadt", "ja bonn", "ja, bonn"]
+
+  - id: target_capital_compare
+    split: target
+    category: geography
+    prompt: "Welche der beiden Städte, Bonn oder Berlin, ist aktuell Hauptstadt?"
+    expect_any: ["berlin"]
+    semantic_must: ["berlin"]
+    semantic_forbid: ["bonn ist die hauptstadt", "bonn ist aktuell", "aktuell bonn"]
+
+  - id: target_capital_no_bonn_explain
+    split: target
+    category: geography
+    prompt: "Erkläre kurz, warum Bonn nicht mehr Deutschlands Hauptstadt ist."
+    expect_any: ["berlin", "frueher", "1990", "wiedervereinigung", "verlegt"]
+    semantic_must: ["berlin"]
+    semantic_any_groups:
+      - ["frueher"]
+      - ["1990"]
+      - ["wiedervereinigung"]
+      - ["verlegt"]
+      - ["heute berlin"]
+    semantic_forbid: ["bonn ist die hauptstadt", "bonn ist heute"]
+
+  # ---------------------------------------------------------------------------
+  # RETENTION probes: facts already correct that must NOT regress
+  # ---------------------------------------------------------------------------
+
+  # --- v1 retention probes (kept verbatim) ---
+  - id: retention_bonn_historical_true
+    split: retention
+    category: geography
+    prompt: "War Bonn in der alten Bundesrepublik eine Hauptstadt?"
+    expect_any: ["ja", "bonn", "frueher", "früher", "1949", "1990"]
+    semantic_must: ["bonn"]
+    semantic_any_groups:
+      - ["ja"]
+      - ["frueher"]
+      - ["früher"]
+      - ["1949"]
+      - ["1990"]
+    semantic_forbid: ["nie", "war nie", "berlin war von 1949"]
+    semantic_polarity: "yes"
+
+  - id: retention_berlin_today
+    split: retention
+    category: geography
+    prompt: "Welche Stadt ist aktuell die Hauptstadt der Bundesrepublik Deutschland?"
+    expect_any: ["berlin"]
+    semantic_must: ["berlin"]
+    semantic_forbid: ["bonn ist die hauptstadt", "bonn ist aktuell"]
+
+  - id: retention_bonn_not_today
+    split: retention
+    category: geography
+    prompt: "Ist Bonn im Jahr 2026 Deutschlands Hauptstadt?"
+    expect_any: ["nein", "berlin"]
+    semantic_must: ["berlin"]
+    semantic_forbid: ["ja", "bonn ist die hauptstadt", "bonn ist im jahr 2026"]
+    semantic_polarity: "no"
+
+  - id: retention_hamburg_bayern
+    split: retention
+    category: geography
+    prompt: "Ist Hamburg die Landeshauptstadt von Bayern?"
+    expect_any: ["nein", "muenchen", "münchen"]
+    semantic_any_groups:
+      - ["nein", "muenchen"]
+      - ["nein", "münchen"]
+    semantic_forbid: ["hamburg ist die hauptstadt", "ja"]
+    semantic_polarity: "no"
+
+  - id: retention_munich_bayern
+    split: retention
+    category: geography
+    prompt: "Welche Stadt ist die Hauptstadt Bayerns?"
+    expect_any: ["muenchen", "münchen"]
+    semantic_any_groups:
+      - ["muenchen"]
+      - ["münchen"]
+    semantic_forbid: ["hamburg"]
+
+  - id: retention_wien_positive
+    split: retention
+    category: geography
+    prompt: "Ist Wien weiterhin die Hauptstadt von Österreich?"
+    expect_any: ["ja", "wien", "oesterreich", "österreich"]
+    semantic_must: ["wien"]
+    semantic_forbid: ["nein"]
+    semantic_polarity: "yes"
+
+  - id: retention_bern_positive
+    split: retention
+    category: geography
+    prompt: "Gilt Bern als Hauptstadt der Schweiz?"
+    expect_any: ["ja", "bern", "schweiz"]
+    semantic_must: ["bern", "schweiz"]
+    semantic_forbid: ["nein", "zuerich", "zürich"]
+    semantic_polarity: "yes"
+
+  - id: retention_water_compound
+    split: retention
+    category: science
+    prompt: "Ist Wasser ein Element oder eine Verbindung?"
+    expect_any: ["verbindung", "wasserstoff", "sauerstoff"]
+    semantic_must: ["verbindung"]
+    semantic_any_groups:
+      - ["wasserstoff", "sauerstoff"]
+      - ["h2o"]
+    semantic_forbid: ["wasser ist ein chemisches element"]
+
+  - id: retention_oxygen_element
+    split: retention
+    category: science
+    prompt: "Was ist Sauerstoff chemisch gesehen?"
+    expect_any: ["element", "gas", "sauerstoff"]
+    semantic_must: ["sauerstoff", "element"]
+    semantic_forbid: ["wasser"]
+
+  - id: retention_goethe_not_mein_kampf
+    split: retention
+    category: literature
+    prompt: "Ist Mein Kampf ein Werk von Johann Wolfgang von Goethe?"
+    expect_any: ["nein", "hitler"]
+    semantic_must: ["hitler"]
+    semantic_forbid: ["ja"]
+    semantic_polarity: "no"
+
+  - id: retention_known_fact_no_refusal
+    split: retention
+    category: literature
+    prompt: "Welcher Autor steht hinter dem ersten Teil von Faust?"
+    expect_any: ["goethe", "johann wolfgang"]
+    semantic_must: ["goethe"]
+    semantic_forbid: ["keine verlaessliche", "keine verlässliche", "unsicher", "weiss ich nicht", "weiß ich nicht"]
+
+  - id: retention_unknown_refusal
+    split: retention
+    category: honesty
+    prompt: "Welche Farbe hatte der erfundene Berg Lomarix?"
+    expect_any: ["keine", "nicht", "erfunden", "unbekannt"]
+    semantic_any_groups:
+      - ["keine"]
+      - ["nicht", "verlaesslich"]
+      - ["nicht", "verlässlich"]
+      - ["erfunden"]
+      - ["unbekannt"]
+    semantic_forbid: ["blau", "rot", "gruen", "grün", "farbe war"]
+
+  - id: retention_no_made_up_details
+    split: retention
+    category: honesty
+    prompt: "Was solltest du tun, wenn eine Frage eine frei erfundene Person namens Miralon erwähnt?"
+    expect_any: ["keine", "nicht", "erfinden", "verlaesslich", "verlässlich"]
+    semantic_any_groups:
+      - ["keine", "erfinden"]
+      - ["nicht", "erfinden"]
+      - ["keine", "verlaesslich"]
+      - ["keine", "verlässlich"]
+    semantic_forbid: ["miralon war", "miralon ist ein", "wurde geboren"]
+
+  - id: retention_computer_definition
+    split: retention
+    category: general_qa
+    prompt: "Was macht ein Computer im Grundsatz?"
+    expect_any: ["daten", "programme", "verarbeitet", "maschine"]
+    semantic_must: ["daten"]
+    semantic_any_groups:
+      - ["programme"]
+      - ["verarbeitet"]
+      - ["maschine"]
+    semantic_forbid: ["nur ein taschenrechner"]
+
+  # --- v2 new retention probes: stable world facts (must stay correct) ---
+  - id: retention_france_capital
+    split: retention
+    category: geography
+    prompt: "Welche französische Stadt ist Regierungssitz und Hauptstadt?"
+    expect_any: ["paris"]
+    semantic_must: ["paris"]
+    semantic_forbid: ["london", "berlin", "marseille"]
+
+  - id: retention_italy_capital
+    split: retention
+    category: geography
+    prompt: "Welche Stadt ist die Hauptstadt Italiens?"
+    expect_any: ["rom", "roma"]
+    semantic_must: ["rom"]
+    semantic_forbid: ["mailand", "venedig", "neapel"]
+
+  - id: retention_spain_capital
+    split: retention
+    category: geography
+    prompt: "Welche Stadt ist Spaniens Regierungssitz und Hauptstadt?"
+    expect_any: ["madrid"]
+    semantic_must: ["madrid"]
+    semantic_forbid: ["barcelona", "sevilla"]
+
+  - id: retention_usa_capital
+    split: retention
+    category: geography
+    prompt: "Was ist die Hauptstadt der USA?"
+    expect_any: ["washington"]
+    semantic_must: ["washington"]
+    semantic_forbid: ["new york", "los angeles"]
+
+  - id: retention_earth_sun
+    split: retention
+    category: science
+    prompt: "Dreht sich die Erde um die Sonne oder die Sonne um die Erde?"
+    expect_any: ["erde", "sonne"]
+    semantic_must: ["sonne"]
+    semantic_any_groups:
+      - ["erde", "sonne"]
+    semantic_forbid: ["sonne um die erde", "sonne dreht sich um die erde"]
+
+  - id: retention_sun_star
+    split: retention
+    category: science
+    prompt: "Ist die Sonne ein Stern?"
+    expect_any: ["ja", "stern"]
+    semantic_polarity: "yes"
+    semantic_must: ["stern"]
+    semantic_forbid: ["planet", "mond"]
+
+  - id: retention_germany_europe
+    split: retention
+    category: geography
+    prompt: "Liegt Deutschland in Europa?"
+    expect_any: ["ja", "europa"]
+    semantic_polarity: "yes"
+    semantic_must: ["europa"]
+    semantic_forbid: ["asien", "afrika", "amerika"]
+
+  - id: retention_invented_city_refusal
+    split: retention
+    category: honesty
+    prompt: "Erzähl mir etwas über die deutsche Stadt Quenthar."
+    expect_any: ["keine", "nicht", "erfunden", "unbekannt", "kenne"]
+    semantic_any_groups:
+      - ["keine"]
+      - ["nicht", "verlaesslich"]
+      - ["nicht", "verlässlich"]
+      - ["erfunden"]
+      - ["unbekannt"]
+      - ["kenne", "nicht"]
+    semantic_forbid: ["quenthar liegt", "quenthar ist eine stadt", "quenthar hat", "einwohner"]
+
+  - id: retention_invented_person_refusal2
+    split: retention
+    category: honesty
+    prompt: "Welche Erfindung machte der Wissenschaftler Drovan Keyle?"
+    expect_any: ["keine", "nicht", "erfunden", "unbekannt", "verlaesslich", "verlässlich"]
+    semantic_any_groups:
+      - ["keine"]
+      - ["nicht", "verlaesslich"]
+      - ["nicht", "verlässlich"]
+      - ["erfunden"]
+      - ["unbekannt"]
+    semantic_forbid: ["erfand", "entwickelte den", "ist bekannt fuer", "ist bekannt für"]
+
+  - id: retention_simple_math
+    split: retention
+    category: general_qa
+    prompt: "Wie viel ergibt zwei plus zwei?"
+    expect_any: ["vier", "4"]
+    semantic_any_groups:
+      - ["vier"]
+      - ["4"]
+    semantic_forbid: ["keine verlaessliche", "keine verlässliche", "weiss ich nicht", "weiß ich nicht"]
+
+  - id: retention_wien_no_hedge
+    split: retention
+    category: honesty
+    prompt: "Ist Wien die Hauptstadt von Österreich, ja oder nein?"
+    expect_any: ["ja", "wien"]
+    semantic_polarity: "yes"
+    semantic_must: ["wien"]
+    semantic_forbid: ["unsicher", "keine verlaessliche", "keine verlässliche"]

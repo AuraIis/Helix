@@ -1,0 +1,70 @@
+name: sft_response_fix_chat_gate_v1
+version: 1
+description: >
+  Source-disjoint chat-format gate for the German response-fix SFT path.
+  These prompts are not emitted into the SFT training file.
+
+defaults:
+  max_new_tokens: 64
+  prompt_style: chat
+
+probes:
+  - id: chat_capital_de
+    category: facts_de
+    prompt: "Was ist die Hauptstadt von Deutschland? Antworte in einem kurzen Satz."
+    expect_any: ["berlin"]
+    forbid_any: ["bonn", "frankfurt", "muenchen"]
+
+  - id: chat_bonn_not_current
+    category: hallucination_guard
+    prompt: "Ist Bonn aktuell die Hauptstadt Deutschlands? Antworte kurz."
+    expect_any: ["nein", "berlin"]
+    forbid_any: ["ja", "bonn ist aktuell"]
+
+  - id: chat_goethe_mein_kampf
+    category: hallucination_guard
+    prompt: "Schrieb Goethe Mein Kampf? Antworte kurz und korrekt."
+    expect_any: ["nein", "hitler"]
+    forbid_any: ["ja", "goethe schrieb mein kampf"]
+
+  - id: chat_unknown_planet
+    category: hallucination_guard
+    prompt: "Welche Farbe hatte der beruehmte rote blaue Planet Lyrion-7? Antworte ehrlich."
+    expect_any: ["nicht", "unbekannt", "keine", "erfunden"]
+    forbid_any: ["lyrion-7 war rot", "lyrion-7 war blau", "hatte die farbe"]
+
+  - id: chat_water_simple
+    category: qa_de
+    prompt: "Erklaere kurz, was Wasser ist."
+    expect_any: ["fluessigkeit", "h2o", "verbindung", "wasserstoff", "sauerstoff"]
+    forbid_any: ["chemisches element", "das wasser ist wasser"]
+
+  - id: chat_apple_short
+    category: qa_de
+    prompt: "Was ist ein Apfel? Antworte mit genau einem kurzen Satz."
+    expect_any: ["frucht", "obst", "essbar"]
+    forbid_any: ["tier", "computer"]
+
+  - id: chat_false_paris_de
+    category: hallucination_guard
+    prompt: "Korrigiere kurz: Paris ist die Hauptstadt von Deutschland."
+    expect_any: ["frankreich", "berlin", "falsch"]
+    forbid_any: ["paris ist die hauptstadt von deutschland"]
+
+  - id: chat_source_unknown
+    category: honesty
+    prompt: "Was solltest du sagen, wenn du eine Quelle nicht kennst?"
+    expect_any: ["nicht", "quelle", "unsicher", "erfinden"]
+    forbid_any: ["garantiert", "definitiv gelesen"]
+
+  - id: chat_munich_state
+    category: facts_de
+    prompt: "In welchem deutschen Bundesland liegt Muenchen?"
+    expect_any: ["bayern"]
+    forbid_any: ["hamburg", "berlin", "nordrhein"]
+
+  - id: chat_stop_clean
+    category: cleanliness
+    prompt: "Schreibe einen normalen kurzen Satz ueber Regen."
+    expect_any: ["regen", "wasser", "wolken", "faellt"]
+    forbid_any: ["regen regen regen", "<html", "_end_of_the_data", "<|user|>"]

@@ -1,0 +1,83 @@
+name: disjoint_pretrain_gate_v1
+version: 1
+description: >
+  Source-disjoint early gate for Auralis pretrain v6 decisions. These prompts
+  must not be used in training data. They intentionally test simple skills in
+  forms that are not copied from the v5 training tail.
+
+defaults:
+  max_new_tokens: 96
+  prompt_style: plain_qa
+
+probes:
+  - id: de_fact_basic_bonn_not_current_capital
+    category: facts_de
+    prompt: "Frage: Ist Bonn heute die Hauptstadt von Deutschland? Antworte kurz.\nAntwort:"
+    expect_any: ["nein"]
+    forbid_any: ["ja", "hauptstadt ist bonn"]
+
+  - id: de_fact_state_munich
+    category: facts_de
+    prompt: "Frage: In welchem deutschen Bundesland liegt Muenchen?\nAntwort:"
+    expect_any: ["bayern"]
+    forbid_any: ["berlin", "hamburg", "nrw", "nordrhein"]
+
+  - id: de_instruction_short_style
+    category: qa_de
+    prompt: "Antworte mit genau einem kurzen Satz: Warum friert Wasser bei Kaelte?\nAntwort:"
+    expect_any: ["temperatur", "gefriert", "eis", "molek"]
+    forbid_any: ["<html", "href=", "<|im_start|>", "_end_of_the_data"]
+
+  - id: de_explain_without_hallucinated_source
+    category: hallucination_guard
+    prompt: "Frage: Nenne eine sichere Antwort, wenn du eine Quelle nicht kennst.\nAntwort:"
+    expect_any: ["nicht", "weiss", "quelle", "unsicher"]
+    forbid_any: ["definitiv", "garantiert", "ich habe die quelle gelesen"]
+
+  - id: de_refuse_false_premise
+    category: hallucination_guard
+    prompt: "Frage: Welche Farbe hatte der beruehmte blaue rote Planet Xylar-9? Antworte ehrlich.\nAntwort:"
+    expect_any: ["nicht", "unbekannt", "keine", "erfunden"]
+    forbid_any: ["blau", "rot", "xylar-9 ist"]
+
+  - id: math_multi_step_small
+    category: math
+    prompt: "Rechne exakt: Ein Paket hat 3 Reihen mit je 7 Schrauben. 4 Schrauben fehlen. Wie viele sind uebrig?\nAntwort:"
+    expect_any: ["17"]
+    forbid_any: ["21", "11", "28"]
+
+  - id: math_compare_numbers
+    category: math
+    prompt: "Was ist groesser: 0,8 oder 0,75? Antworte nur mit der groesseren Zahl.\nAntwort:"
+    expect_any: ["0,8", "0.8"]
+    forbid_any: ["0,75", "0.75"]
+
+  - id: code_python_return_keyword
+    category: code
+    prompt: "Vervollstaendige Python sinnvoll:\ndef square(x):\n    "
+    expect_any: ["return x * x", "return x*x", "return x ** 2", "return x**2"]
+    forbid_any: ["#include", "public static", "<html"]
+
+  - id: code_python_bug_reason
+    category: code
+    prompt: "Kurze Antwort: Warum ist eine mutable Default-Liste in Python-Funktionen oft ein Bug?\nAntwort:"
+    expect_any: ["wiederverwendet", "geteilt", "aufruf", "zustand", "mutable"]
+    forbid_any: ["kein bug", "immer sicher"]
+
+  - id: cleanliness_no_store_markup
+    category: cleanliness
+    prompt: "Erklaere kurz, was ein Taschenrechner ist.\nAntwort:"
+    expect_any: ["geraet", "rechnen", "zahlen", "berechnet"]
+    forbid_any: ["warenkorb", "rabatt", "<html", "href=", "cookie policy", "<|im_start|>"]
+
+  - id: qa_context_answer_only
+    category: qa_de
+    prompt: "Kontext: Lara legt 2 Buecher auf den Tisch und nimmt spaeter 1 Buch wieder weg. Frage: Wie viele Buecher liegen noch auf dem Tisch?\nAntwort:"
+    expect_any: ["1", "ein"]
+    forbid_any: ["2", "3"]
+
+  - id: repetition_guard
+    category: cleanliness
+    prompt: "Schreibe einen normalen Satz ueber Regen.\nAntwort:"
+    expect_any: ["regen", "wasser", "wolken", "faellt"]
+    forbid_any: ["regen regen regen", "....", "!!!!!!", "_end_of_the_data"]

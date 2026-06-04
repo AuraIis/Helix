@@ -1,0 +1,60 @@
+# Helix v2 - 100M MTP canary.
+#
+# Same compact architecture as helix_v2_100m.yaml, but with two shared-output
+# future-token heads. Use for quick A/B checks before enabling MTP on 500M.
+
+name: helix_v2_100m_mtp
+version: "2.2.0-mtp"
+
+tokenizer:
+  path: "tokenizer/helix_v2_tokenizer.model"
+  vocab_size: 200000
+
+model:
+  d_model: 512
+  n_layers: 8
+  n_heads: 8
+  d_head: 64
+  d_ffn: 1344
+  activation: silu
+  norm_type: rmsnorm
+  norm_eps: 1.0e-6
+
+layers:
+  - {repeat: 2, config: {type: mamba, d_state: 64, d_conv: 4, expand_factor: 2, dt_min: 0.001, dt_max: 0.1}}
+  - {repeat: 4, config: {type: gla, d_state: 64}}
+  - {repeat: 2, config: {type: sparse_attention, window_size: 256, global_tokens: 16, use_rope: true}}
+
+ffn:
+  type: dense
+  activation: silu_gated
+
+moe:
+  enabled: false
+
+mtp:
+  enabled: true
+  n_heads: 2
+  loss_weight: 0.2
+
+position_encoding:
+  type: rope
+  theta: 10000.0
+  max_seq_length: 2048
+
+init:
+  scheme: scaled_normal
+  init_std: 0.02
+  embedding_init_std: 0.02
+  output_init_scale: 0.5
+
+dropout:
+  embedding: 0.0
+  attention: 0.0
+  ffn: 0.0
+  residual: 0.0
+
+advanced:
+  tie_embeddings: true
+  use_flash_attention: false
+  gradient_checkpointing: false

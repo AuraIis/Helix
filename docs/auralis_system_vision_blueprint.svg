@@ -1,0 +1,141 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1320 910" font-family="Consolas, 'Courier New', monospace">
+  <defs>
+    <filter id="g" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="2.1" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="bg2" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="4.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0 H0 V40" fill="none" stroke="#0e3b25" stroke-width="1" opacity="0.5"/></pattern>
+    <marker id="ag" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#36f58c"/></marker>
+    <marker id="am" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#ff5fb0"/></marker>
+    <marker id="ac" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#38d9ff"/></marker>
+  </defs>
+
+  <rect width="1320" height="910" fill="#06120b"/>
+  <rect width="1320" height="910" fill="url(#grid)"/>
+  <g fill="#1bd06a" opacity="0.09" font-size="15">
+    <text x="60" y="150">1<tspan x="60" dy="20">0</tspan><tspan x="60" dy="20">L</tspan><tspan x="60" dy="20">o</tspan><tspan x="60" dy="20">R</tspan><tspan x="60" dy="20">A</tspan></text>
+    <text x="835" y="640">0<tspan x="835" dy="20">1</tspan><tspan x="835" dy="20">D</tspan><tspan x="835" dy="20">o</tspan><tspan x="835" dy="20">R</tspan><tspan x="835" dy="20">A</tspan></text>
+  </g>
+  <g stroke="#2f7d52" stroke-width="1.4"><path d="M18,18 h22 M18,18 v22"/><path d="M1302,18 h-22 M1302,18 v22"/><path d="M18,888 h22 M18,888 v-22"/><path d="M1302,888 h-22 M1302,888 v-22"/></g>
+
+  <text x="40" y="48" font-size="25" font-weight="700" fill="#36f58c" filter="url(#bg2)">AURALIS — BAUPLAN DER SYSTEMVISION</text>
+  <text x="42" y="72" font-size="13" fill="#38d9ff">Eine universelle, eingefrorene Basis + Wissen &amp; Skills als DoRA/LoRA-Adapter obendrauf — und warum das ein grosses Vokab braucht</text>
+  <line x1="40" y1="82" x2="1290" y2="82" stroke="#1f7d4d" stroke-width="1" stroke-dasharray="3 5"/>
+
+  <!-- ===== LEFT: the layered system stack ===== -->
+
+  <!-- Output (top) -->
+  <rect x="650" y="110" width="170" height="46" rx="3" fill="#06201f" stroke="#38d9ff" stroke-width="2" filter="url(#g)"/>
+  <text x="735" y="138" text-anchor="middle" font-size="13" font-weight="700" fill="#bdf3ff">Antwort / Ausgabe</text>
+
+  <!-- (4) SKILLS layer -->
+  <rect x="40" y="175" width="780" height="150" rx="4" fill="#21071a" stroke="#ff5fb0" stroke-width="2.4" filter="url(#g)"/>
+  <text x="58" y="200" font-size="14.5" font-weight="700" fill="#ff8ccb">④  SKILLS — DoRA / LoRA-Adapter (austauschbar)   [⚗ Proxy ok · auf Basis offen]</text>
+  <rect x="60" y="215" width="120" height="74" rx="3" fill="#2a0a22" stroke="#ff5fb0" stroke-width="1.8"/>
+  <text x="120" text-anchor="middle" fill="#ffc6e6"><tspan x="120" y="248" font-size="13" font-weight="700">Router</tspan><tspan x="120" y="268" font-size="12">&lt;route&gt;</tspan></text>
+  <g font-size="11.5" fill="#ffd0ea">
+    <rect x="205" y="220" width="108" height="64" rx="3" fill="#2a0a22" stroke="#ff5fb0" stroke-width="1.5"/><text x="259" y="256" text-anchor="middle">Code</text>
+    <rect x="325" y="220" width="108" height="64" rx="3" fill="#2a0a22" stroke="#ff5fb0" stroke-width="1.5"/><text x="379" y="256" text-anchor="middle">Deutsch</text>
+    <rect x="445" y="220" width="108" height="64" rx="3" fill="#2a0a22" stroke="#ff5fb0" stroke-width="1.5"/><text x="499" y="256" text-anchor="middle">Englisch</text>
+    <rect x="565" y="220" width="108" height="64" rx="3" fill="#2a0a22" stroke="#ff5fb0" stroke-width="1.5"/><text x="619" y="256" text-anchor="middle">Mathe</text>
+    <rect x="685" y="220" width="115" height="64" rx="3" fill="#2a0a22" stroke="#ff5fb0" stroke-width="1.5"/><text x="742" y="256" text-anchor="middle">Domäne …</text>
+  </g>
+  <text x="58" y="312" font-size="11.5" fill="#ffb6df">Adapter ändern GEWICHTE (+ΔW), NICHT das Vokab — werden je Aufgabe geladen/getauscht.</text>
+  <!-- router -> cartridges -->
+  <g stroke="#ff5fb0" stroke-width="1.4" opacity="0.8"><line x1="180" y1="252" x2="204" y2="252" marker-end="url(#am)"/></g>
+
+  <!-- (2) BASE -->
+  <rect x="40" y="360" width="780" height="180" rx="4" fill="#08231a" stroke="#36f58c" stroke-width="2.6" filter="url(#g)"/>
+  <text x="58" y="386" font-size="14.5" font-weight="700" fill="#36f58c">②  HELIX-BASIS — eingefroren ❄   (~954M · Denk-Körper ~700M)   [✓ trainiert · stabil]</text>
+  <rect x="62" y="400" width="230" height="66" rx="3" fill="#0c3a26" stroke="#36f58c" stroke-width="1.6"/><text x="177" text-anchor="middle" fill="#bff5cf"><tspan x="177" y="428" font-size="13" font-weight="700">6× Mamba-2</tspan><tspan x="177" y="447" font-size="10.5">State-Space O(n)</tspan></text>
+  <rect x="302" y="400" width="230" height="66" rx="3" fill="#0b2640" stroke="#5aa0ff" stroke-width="1.6"/><text x="417" text-anchor="middle" fill="#bcd9ff"><tspan x="417" y="428" font-size="13" font-weight="700">16× GLA</tspan><tspan x="417" y="447" font-size="10.5">linear Attention</tspan></text>
+  <rect x="542" y="400" width="256" height="66" rx="3" fill="#1d1233" stroke="#b483ff" stroke-width="1.6"/><text x="670" text-anchor="middle" fill="#dcc9ff"><tspan x="670" y="428" font-size="13" font-weight="700">6× Sparse-Attn</tspan><tspan x="670" y="447" font-size="10.5">präzises Mixing</tspan></text>
+  <!-- knowledge note inside base -->
+  <rect x="62" y="478" width="736" height="48" rx="3" fill="#06232b" stroke="#38d9ff" stroke-width="1.6"/>
+  <text x="430" text-anchor="middle" fill="#bdf3ff"><tspan x="430" y="498" font-size="12.5" font-weight="700">③  WISSEN — knowledge_dna / kernel · &lt;memory&gt; / &lt;recall&gt;   [⚗ unbewiesen]</tspan><tspan x="430" y="516" font-size="11">dichte Fakten-Blöcke, in die Basis hineingerufen (noch experimentell)</tspan></text>
+
+  <!-- (1) VOCAB -->
+  <rect x="40" y="575" width="780" height="78" rx="4" fill="#1a1405" stroke="#ffb454" stroke-width="2.4" filter="url(#g)"/>
+  <text x="430" text-anchor="middle" fill="#ffd9a0"><tspan x="430" y="600" font-size="14.5" font-weight="700">①  REPRÄSENTATION — 200k UNIVERSELLES Vokabular   [✓ aktiv]</tspan><tspan x="430" y="620" font-size="11.5">en / de / code  +  &lt;route&gt; &lt;memory&gt; &lt;lora&gt; Spezialtokens</tspan><tspan x="430" y="640" font-size="11" font-style="italic">= das Substrat, das ALLES abdeckt, was ein künftiger Adapter ansprechen könnte</tspan></text>
+
+  <!-- Input -->
+  <rect x="40" y="685" width="170" height="46" rx="3" fill="#06201f" stroke="#38d9ff" stroke-width="2" filter="url(#g)"/>
+  <text x="125" y="713" text-anchor="middle" font-size="13" font-weight="700" fill="#bdf3ff">Prompt / Eingabe</text>
+
+  <!-- flow arrows -->
+  <line x1="125" y1="685" x2="125" y2="655" stroke="#36f58c" stroke-width="2.4" marker-end="url(#ag)"/>
+  <line x1="125" y1="575" x2="125" y2="542" stroke="#36f58c" stroke-width="2.4" marker-end="url(#ag)"/>
+  <line x1="735" y1="360" x2="735" y2="158" stroke="#36f58c" stroke-width="2.4" marker-end="url(#ag)"/>
+  <!-- skills attach DOWN into base -->
+  <g stroke="#ff5fb0" stroke-width="1.8" stroke-dasharray="6 4">
+    <line x1="300" y1="325" x2="300" y2="358" marker-end="url(#am)"/>
+    <line x1="500" y1="325" x2="500" y2="358" marker-end="url(#am)"/>
+  </g>
+  <text x="360" y="346" font-size="10.5" fill="#ff9ed1">angewandt auf die Basis (+ΔW)</text>
+
+  <!-- ===== RIGHT: WHY callouts ===== -->
+  <rect x="850" y="100" width="440" height="132" rx="5" fill="#08231a" stroke="#ffb454" stroke-width="2" filter="url(#g)"/>
+  <text x="866" y="124" font-size="14" font-weight="700" fill="#ffb454">WARUM EIN GROSSES VOKAB (200k)?</text>
+  <text x="866" fill="#ffe6c7" font-size="12">
+    <tspan x="866" y="148">Ein LoRA/DoRA-Adapter ändert GEWICHTE, nicht die</tspan>
+    <tspan x="866" y="166">Token-Tabelle. Du kannst einen Skill nachrüsten —</tspan>
+    <tspan x="866" y="184">aber KEIN Vokabular.</tspan>
+    <tspan x="866" y="206" fill="#ffd9a0">→ kleines Vokab = permanente Decke.</tspan>
+    <tspan x="866" y="224" fill="#ffd9a0">→ 200k = universelles Substrat, in das jeder Adapter passt.</tspan>
+  </text>
+
+  <rect x="850" y="246" width="440" height="104" rx="5" fill="#21071a" stroke="#ff5fb0" stroke-width="2" filter="url(#g)"/>
+  <text x="866" y="270" font-size="14" font-weight="700" fill="#ff8ccb">EINE BASIS · VIELE ADAPTER</text>
+  <text x="866" fill="#ffd0ea" font-size="12">
+    <tspan x="866" y="294">Wissen &amp; Skills kommen OBENDRAUF — nicht in die Basis.</tspan>
+    <tspan x="866" y="312">Du baust 1 breite, eingefrorene Basis + viele kleine,</tspan>
+    <tspan x="866" y="330">tauschbare Adapter — statt vieler kompletter Modelle.</tspan>
+  </text>
+
+  <rect x="850" y="364" width="440" height="120" rx="5" fill="#06201f" stroke="#38d9ff" stroke-width="2" filter="url(#g)"/>
+  <text x="866" y="388" font-size="14" font-weight="700" fill="#7fe0ff">SO SIEHT ES SPÄTER AUS</text>
+  <text x="866" fill="#c7eeff" font-size="12">
+    <tspan x="866" y="412">1 eingefrorene Basis (~1 GB) + ein „Regal" Adapter</tspan>
+    <tspan x="866" y="430">(je nur wenige MB). Je Aufgabe laden:</tspan>
+    <tspan x="866" y="448">Code-Adapter · Sprach-Adapter · Domänen-Adapter.</tspan>
+    <tspan x="866" y="468" fill="#8fe6ff">Schnell · lokal · modular · ein Update = ein Adapter.</tspan>
+  </text>
+
+  <rect x="850" y="498" width="440" height="96" rx="5" fill="#1a1405" stroke="#9aa7b3" stroke-width="1.6"/>
+  <text x="866" y="520" font-size="12.5" font-weight="700" fill="#cdd6df">OFFEN / EHRLICH</text>
+  <text x="866" fill="#aeb9c4" font-size="11.5">
+    <tspan x="866" y="542">• Adapter-Wissen (knowledge_dna) ist noch UNBEWIESEN.</tspan>
+    <tspan x="866" y="560">• Die Universal-Wette lohnt stärker bei grösserer Basis;</tspan>
+    <tspan x="866" y="578">  bei &lt;1B sind 256M Vokab-Params (27%) ein hoher Preis.</tspan>
+  </text>
+
+  <text x="40" y="744" font-size="11" fill="#9fb0bf">Status-Marker:  ✓ getestet/gemessen   ⚗ unbewiesen/in Arbeit   ▷ geplant   ·   Messdaten + Details → Blatt 2 (Evidenz)</text>
+
+  <!-- legend -->
+  <g font-size="11">
+    <rect x="40" y="755" width="13" height="13" fill="#1a1405" stroke="#ffb454" stroke-width="2"/><text x="58" y="766" fill="#9fb0bf">Repräsentation/Vokab</text>
+    <rect x="215" y="755" width="13" height="13" fill="#08231a" stroke="#36f58c" stroke-width="2"/><text x="233" y="766" fill="#9fb0bf">Basis (eingefroren)</text>
+    <rect x="380" y="755" width="13" height="13" fill="#06232b" stroke="#38d9ff" stroke-width="2"/><text x="398" y="766" fill="#9fb0bf">Wissen</text>
+    <rect x="480" y="755" width="13" height="13" fill="#21071a" stroke="#ff5fb0" stroke-width="2"/><text x="498" y="766" fill="#9fb0bf">Skills (Adapter)</text>
+  </g>
+
+  <!-- ===== SCALING roadmap ===== -->
+  <rect x="40" y="786" width="1250" height="104" rx="5" fill="#08231a" stroke="#36f58c" stroke-width="2.2" filter="url(#g)"/>
+  <text x="58" y="810" font-size="14.5" font-weight="700" fill="#36f58c" filter="url(#g)">⑤  SKALIERUNG — die Basis soll WACHSEN (1B ist das Fundament, nicht das Ziel)   [▷ geplant]</text>
+  <rect x="60" y="824" width="180" height="48" rx="3" fill="#0c3a26" stroke="#36f58c" stroke-width="1.6"/><text x="150" text-anchor="middle" fill="#bff5cf"><tspan x="150" y="845" font-size="12.5" font-weight="700">Helix v2 · ~1B</tspan><tspan x="150" y="863" font-size="10.5">Vokab-Anteil ~27%</tspan></text>
+  <rect x="300" y="824" width="180" height="48" rx="3" fill="#0c3a26" stroke="#36f58c" stroke-width="1.6"/><text x="390" text-anchor="middle" fill="#bff5cf"><tspan x="390" y="845" font-size="12.5" font-weight="700">~3B</tspan><tspan x="390" y="863" font-size="10.5">Vokab-Anteil ~13%</tspan></text>
+  <rect x="540" y="824" width="180" height="48" rx="3" fill="#0c3a26" stroke="#36f58c" stroke-width="1.6"/><text x="630" text-anchor="middle" fill="#bff5cf"><tspan x="630" y="845" font-size="12.5" font-weight="700">~7B+</tspan><tspan x="630" y="863" font-size="10.5">Vokab-Anteil ~10%</tspan></text>
+  <line x1="240" y1="848" x2="299" y2="848" stroke="#36f58c" stroke-width="2.2" marker-end="url(#ag)"/>
+  <line x1="480" y1="848" x2="539" y2="848" stroke="#36f58c" stroke-width="2.2" marker-end="url(#ag)"/>
+  <text x="748" fill="#cdf7da" font-size="11.5"><tspan x="748" y="838">Vokab bleibt fix bei 200k → der Anteil SINKT, je grösser die Basis</tspan><tspan x="748" y="856">→ die 200k-Wette zahlt sich GENAU beim Skalieren aus.</tspan><tspan x="748" y="874">Mehr Modell braucht mehr Daten (→ Pipeline) + mehr GPUs (→ DDP, schon gebaut).</tspan></text>
+
+  <!-- title block -->
+  <rect x="985" y="630" width="305" height="138" rx="3" fill="#081a12" stroke="#36f58c" stroke-width="1.8"/>
+  <line x1="985" y1="658" x2="1290" y2="658" stroke="#1f7d4d" stroke-width="1"/>
+  <text x="1000" y="650" font-size="12.5" font-weight="700" fill="#36f58c">AURALIS — SCHRIFTFELD</text>
+  <text fill="#9fe9bd" font-size="11">
+    <tspan x="1000" y="678">BLATT    · SYSTEMVISION (Basis + Adapter)</tspan>
+    <tspan x="1000" y="696">SCHICHTEN· Vokab → Basis → Wissen → Skills</tspan>
+    <tspan x="1000" y="714">BASIS    · Helix v2 · 28L Hybrid · 200k · bf16</tspan>
+    <tspan x="1000" y="732">SKILLS   · DoRA/LoRA · &lt;route&gt;/&lt;lora&gt;</tspan>
+    <tspan x="1000" y="750">STATUS   · Basis trainiert · Adapter geplant</tspan>
+  </text>
+</svg>

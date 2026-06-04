@@ -1,0 +1,265 @@
+# Industry-standard benchmark suite for Auralis.
+#
+# Complements the custom 50-question baseline. Each benchmark is loaded from
+# its HuggingFace dataset, scored with the canonical metric, and the result
+# is appended to eval/results/benchmarks/<benchmark>__<step>.json.
+#
+# Phase-keyed schedule reflects what each benchmark actually measures and at
+# what training stage we expect a meaningful signal:
+#
+#   * pretrain_signal — runs from Phase-1 onwards. Pass = "pretraining is
+#     producing a coherent base". A 1B model shouldn't ace these, just trend.
+#   * post_pretrain    — only meaningful once Phase-2 is done.
+#   * post_sft         — needs Phase-3 SFT (instruction-following) to score.
+#   * frontier         — really for v3 (3B+); we run them on v2 mostly to
+#                        baseline how far away we are. Expect floor scores.
+#   * de_specific      — German-language probes. Critical for our positioning.
+#
+# Subsample sizes are chosen so the full suite runs in <1h on a single GPU.
+# Increase `n_samples: -1` to run the full eval set when we want a final
+# leaderboard number.
+
+version: "1.0"
+
+# Default sampling parameters for free-generation benchmarks.
+# Multiple-choice benchmarks ignore these and use teacher-forcing.
+sampling:
+  temperature: 0.0       # deterministic for reproducible scores
+  top_p: 1.0
+  max_new_tokens: 256
+  repetition_penalty: 1.0
+
+
+benchmarks:
+
+  # ---- pretrain_signal -----------------------------------------------------
+  hellaswag:
+    schedule: pretrain_signal
+    hf_dataset: "Rowan/hellaswag"
+    split: "validation"
+    n_samples: 1000
+    metric: "accuracy_mc4"          # 4-way multiple choice, log-prob scoring
+    expected_floor:  0.30           # random = 0.25; a healthy 1B base ≥ 0.45
+    expected_target: 0.45
+    description: |
+      Sentence-completion commonsense. Detects that the LM produces
+      grammatical, coherent continuations even early in pretraining.
+
+  arc_easy:
+    schedule: pretrain_signal
+    hf_dataset: "allenai/ai2_arc"
+    config: "ARC-Easy"
+    split: "test"
+    n_samples: 1000
+    metric: "accuracy_mc"           # variable-N choices
+    expected_floor:  0.40
+    expected_target: 0.55
+
+  arc_challenge:
+    schedule: pretrain_signal
+    hf_dataset: "allenai/ai2_arc"
+    config: "ARC-Challenge"
+    split: "test"
+    n_samples: 500
+    metric: "accuracy_mc"
+    expected_floor:  0.25
+    expected_target: 0.35
+
+  winogrande:
+    schedule: pretrain_signal
+    hf_dataset: "allenai/winogrande"
+    config: "winogrande_xl"
+    split: "validation"
+    n_samples: 1000
+    metric: "accuracy_mc2"          # binary
+    expected_floor:  0.50           # random = 0.50
+    expected_target: 0.60
+
+  gsm8k:
+    schedule: pretrain_signal
+    hf_dataset: "gsm8k"
+    config: "main"
+    split: "test"
+    n_samples: 500
+    metric: "exact_match_number"    # last-number-in-output match
+    expected_floor:  0.02
+    expected_target: 0.10
+    description: |
+      Grade-school math word problems. 1B base ≥ 5% is healthy; SFT'd 1B
+      ≥ 15% is good. Frontier models hit 90%+.
+
+  # ---- post_pretrain (only meaningful after Phase-2 done) ------------------
+  mmlu_pro:
+    schedule: post_pretrain
+    hf_dataset: "TIGER-Lab/MMLU-Pro"
+    split: "test"
+    n_samples: 1000                 # subsample; full set ~12k
+    metric: "accuracy_mc"
+    expected_floor:  0.10           # random ≈ 0.10 (10 choices)
+    expected_target: 0.18
+
+  bbh:
+    schedule: post_pretrain
+    hf_dataset: "lukaemon/bbh"
+    split: "test"
+    n_samples: 500
+    metric: "exact_match_choice"
+    expected_floor:  0.30
+    expected_target: 0.40
+
+  # ---- post_sft (needs Phase-3 SFT) ----------------------------------------
+  humaneval:
+    schedule: post_sft
+    hf_dataset: "openai_humaneval"
+    split: "test"
+    n_samples: -1                   # 164 problems; run all
+    metric: "pass_at_1"             # execute generated code in sandbox
+    expected_floor:  0.05
+    expected_target: 0.20
+    description: |
+      Functional Python from docstrings. Requires sandboxed execution
+      via tests/run_humaneval_sandbox.py to avoid side-effects.
+
+  gpqa_diamond:
+    schedule: post_sft
+    hf_dataset: "Idavidrein/gpqa"
+    config: "gpqa_diamond"
+    split: "train"                  # GPQA only ships train; eval is the train set
+    n_samples: -1                   # 198 questions
+    metric: "accuracy_mc4"
+    expected_floor:  0.25           # random = 0.25
+    expected_target: 0.30
+    description: |
+      PhD-level Bio/Chem/Physics. 1B will struggle (~30% = essentially
+      random). We run it for trend, not score.
+
+  # ---- frontier (v3 / 7B+ territory) ---------------------------------------
+  aime_2024:
+    schedule: frontier
+    hf_dataset: "qq8933/AIME_2024"
+    split: "train"
+    n_samples: 30
+    metric: "exact_match_number"
+    expected_floor:  0.0
+    expected_target: 0.0
+    description: |
+      USA Math Olympiad. We do NOT expect a 1B/3B to solve these; we run
+      it pre-/post-Phase-5 to confirm the math-MoRA adapter actually
+      lifts the floor at all.
+
+  livecodebench:
+    schedule: frontier
+    hf_dataset: "livecodebench/code_generation_lite"
+    config: "release_v4"            # most recent at time of writing
+    split: "test"
+    n_samples: 100
+    metric: "pass_at_1"
+    expected_floor:  0.0
+    expected_target: 0.05
+    description: |
+      Continuously refreshed coding problems → resists training-data
+      contamination. Critical for code-MoRA quality measurement.
+
+  # ---- de_specific (our differentiator) ------------------------------------
+  mmlu_de:
+    schedule: post_pretrain
+    hf_dataset: "alexandrainst/m_mmlu"
+    config: "de"
+    split: "test"
+    n_samples: 1000
+    metric: "accuracy_mc4"
+    expected_floor:  0.25           # random = 0.25
+    expected_target: 0.32
+    description: |
+      MMLU translated into German. Phase-2 (60% DE) should lift this
+      meaningfully over Phase-1.
+
+  germanquad:
+    schedule: post_pretrain
+    hf_dataset: "deepset/germanquad"
+    split: "test"
+    n_samples: 500
+    metric: "f1_squad"
+    expected_floor:  0.25
+    expected_target: 0.40
+    description: |
+      Reading comprehension in German. Tests whether the DE-heavy
+      Phase-2 mix produced an actual reading-capable model.
+
+  paws_x_de:
+    schedule: post_pretrain
+    hf_dataset: "google-research-datasets/paws-x"
+    config: "de"
+    split: "test"
+    n_samples: 1000
+    metric: "accuracy_mc2"
+    expected_floor:  0.50
+    expected_target: 0.65
+    description: |
+      Paraphrase identification in German. Probes whether the model
+      developed structural-meaning representations beyond surface form.
+
+  xnli_de:
+    schedule: post_pretrain
+    hf_dataset: "facebook/xnli"
+    config: "de"
+    split: "validation"
+    n_samples: 1000
+    metric: "accuracy_mc3"
+    expected_floor:  0.34           # random ≈ 0.33
+    expected_target: 0.45
+    description: |
+      Cross-lingual NLI in German. Tests entailment / contradiction.
+
+
+# Tier groupings — picked up by run_benchmarks.py via --tier.
+tiers:
+  smoke:
+    description: "Fastest healthy-base check. Runs in <10 min on RTX 3090."
+    benchmarks: [hellaswag, arc_easy]
+    n_samples_override: 200          # tighter for smoke
+
+  pretrain:
+    description: "Phase-1+ signal — meaningful after step 20k."
+    benchmarks:
+      - hellaswag
+      - arc_easy
+      - arc_challenge
+      - winogrande
+      - gsm8k
+
+  post_pretrain:
+    description: "Phase-2 done — full multilingual + reasoning probe."
+    benchmarks:
+      - hellaswag
+      - arc_easy
+      - arc_challenge
+      - winogrande
+      - gsm8k
+      - mmlu_pro
+      - bbh
+      - mmlu_de
+      - germanquad
+      - paws_x_de
+      - xnli_de
+
+  post_sft:
+    description: "Phase-3+ SFT done — instruction-following + code."
+    benchmarks:
+      - hellaswag
+      - arc_easy
+      - arc_challenge
+      - gsm8k
+      - mmlu_pro
+      - bbh
+      - humaneval
+      - gpqa_diamond
+      - mmlu_de
+      - germanquad
+
+  frontier:
+    description: "v3 readiness check. Expect floor scores on a 1B."
+    benchmarks:
+      - aime_2024
+      - livecodebench
+      - gpqa_diamond

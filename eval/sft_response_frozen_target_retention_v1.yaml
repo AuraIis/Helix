@@ -1,0 +1,218 @@
+name: sft_response_frozen_target_retention_v1
+version: 1
+description: >
+  Frozen, never-train eval for German response repair. It replaces net 12/12
+  gate thinking with two separate views:
+  target probes must improve on the fragile concepts, while retention probes
+  must not regress. A single retention regression means not promotable.
+
+defaults:
+  max_new_tokens: 64
+  prompt_style: chat
+
+probes:
+  # Target probes: fragile concepts that should improve without being exact
+  # training prompts.
+  - id: target_photo_leaf_energy
+    split: target
+    category: science
+    prompt: "Wie nutzen grüne Blätter Licht, um Nahrung zu bilden?"
+    expect_any: ["pflanzen", "licht", "zucker", "sauerstoff"]
+    expect_all: ["licht"]
+    semantic_must: ["licht"]
+    semantic_any_groups:
+      - ["pflanzen", "zucker"]
+      - ["blatt", "zucker"]
+      - ["pflanzen", "sauerstoff"]
+    semantic_forbid: ["licht aus licht", "metall", "waerme", "wärme", "pflanzen mit licht bilden"]
+
+  - id: target_photo_products
+    split: target
+    category: science
+    prompt: "Welche Produkte entstehen, wenn Pflanzen Photosynthese betreiben?"
+    expect_any: ["zucker", "sauerstoff", "glucose"]
+    semantic_any_groups:
+      - ["zucker", "sauerstoff"]
+      - ["glucose", "sauerstoff"]
+    semantic_forbid: ["licht aus licht", "chemische verbindung zwischen licht", "metall"]
+
+  - id: target_photo_short
+    split: target
+    category: science
+    prompt: "Fasse Photosynthese biologisch korrekt in einem Satz zusammen."
+    expect_any: ["pflanzen", "licht", "zucker", "sauerstoff"]
+    semantic_must: ["licht"]
+    semantic_any_groups:
+      - ["pflanzen", "zucker"]
+      - ["pflanzen", "sauerstoff"]
+      - ["zucker", "sauerstoff"]
+    semantic_forbid: ["licht aus licht", "pflanzen mit licht bilden", "metall"]
+
+  - id: target_faust_known_fact
+    split: target
+    category: literature
+    prompt: "Welchem deutschen Autor ordnet man das Drama Faust zu?"
+    expect_any: ["goethe", "johann wolfgang"]
+    semantic_must: ["goethe"]
+    semantic_forbid: ["hitler", "keine verlaessliche", "keine verlässliche", "weiss ich nicht", "weiß ich nicht"]
+
+  - id: target_faust_confident
+    split: target
+    category: literature
+    prompt: "Ist die Autorschaft von Faust eine bekannte Tatsache, und wer ist es?"
+    expect_any: ["ja", "goethe", "johann wolfgang"]
+    semantic_must: ["goethe"]
+    semantic_forbid: ["unsicher", "keine verlaessliche", "keine verlässliche", "hitler"]
+
+  - id: target_current_capital_choice
+    split: target
+    category: geography
+    prompt: "Wenn heute zwischen Bonn und Berlin gewählt werden muss: Welche Stadt ist Deutschlands Hauptstadt?"
+    expect_any: ["berlin"]
+    semantic_must: ["berlin"]
+    semantic_forbid: ["bonn ist die hauptstadt", "ja. bonn", "bonn ist heute"]
+
+  # Retention probes: facts already correct must remain correct.
+  - id: retention_bonn_historical_true
+    split: retention
+    category: geography
+    prompt: "War Bonn in der alten Bundesrepublik eine Hauptstadt?"
+    expect_any: ["ja", "bonn", "frueher", "früher", "1949", "1990"]
+    semantic_must: ["bonn"]
+    semantic_any_groups:
+      - ["ja"]
+      - ["frueher"]
+      - ["früher"]
+      - ["1949"]
+      - ["1990"]
+    semantic_forbid: ["nie", "war nie", "berlin war von 1949"]
+    semantic_polarity: "yes"
+
+  - id: retention_berlin_today
+    split: retention
+    category: geography
+    prompt: "Welche Stadt ist aktuell die Hauptstadt der Bundesrepublik Deutschland?"
+    expect_any: ["berlin"]
+    semantic_must: ["berlin"]
+    semantic_forbid: ["bonn ist die hauptstadt", "bonn ist aktuell"]
+
+  - id: retention_bonn_not_today
+    split: retention
+    category: geography
+    prompt: "Ist Bonn im Jahr 2026 Deutschlands Hauptstadt?"
+    expect_any: ["nein", "berlin"]
+    semantic_must: ["berlin"]
+    semantic_forbid: ["ja", "bonn ist die hauptstadt", "bonn ist im jahr 2026"]
+    semantic_polarity: "no"
+
+  - id: retention_hamburg_bayern
+    split: retention
+    category: geography
+    prompt: "Ist Hamburg die Landeshauptstadt von Bayern?"
+    expect_any: ["nein", "muenchen", "münchen"]
+    semantic_any_groups:
+      - ["nein", "muenchen"]
+      - ["nein", "münchen"]
+    semantic_forbid: ["hamburg ist die hauptstadt", "ja"]
+    semantic_polarity: "no"
+
+  - id: retention_munich_bayern
+    split: retention
+    category: geography
+    prompt: "Welche Stadt ist die Hauptstadt Bayerns?"
+    expect_any: ["muenchen", "münchen"]
+    semantic_any_groups:
+      - ["muenchen"]
+      - ["münchen"]
+    semantic_forbid: ["hamburg"]
+
+  - id: retention_wien_positive
+    split: retention
+    category: geography
+    prompt: "Ist Wien weiterhin die Hauptstadt von Österreich?"
+    expect_any: ["ja", "wien", "oesterreich", "österreich"]
+    semantic_must: ["wien"]
+    semantic_forbid: ["nein"]
+    semantic_polarity: "yes"
+
+  - id: retention_bern_positive
+    split: retention
+    category: geography
+    prompt: "Gilt Bern als Hauptstadt der Schweiz?"
+    expect_any: ["ja", "bern", "schweiz"]
+    semantic_must: ["bern", "schweiz"]
+    semantic_forbid: ["nein", "zuerich", "zürich"]
+    semantic_polarity: "yes"
+
+  - id: retention_water_compound
+    split: retention
+    category: science
+    prompt: "Ist Wasser ein Element oder eine Verbindung?"
+    expect_any: ["verbindung", "wasserstoff", "sauerstoff"]
+    semantic_must: ["verbindung"]
+    semantic_any_groups:
+      - ["wasserstoff", "sauerstoff"]
+      - ["h2o"]
+    semantic_forbid: ["wasser ist ein chemisches element"]
+
+  - id: retention_oxygen_element
+    split: retention
+    category: science
+    prompt: "Was ist Sauerstoff chemisch gesehen?"
+    expect_any: ["element", "gas", "sauerstoff"]
+    semantic_must: ["sauerstoff", "element"]
+    semantic_forbid: ["wasser"]
+
+  - id: retention_goethe_not_mein_kampf
+    split: retention
+    category: literature
+    prompt: "Ist Mein Kampf ein Werk von Johann Wolfgang von Goethe?"
+    expect_any: ["nein", "hitler"]
+    semantic_must: ["hitler"]
+    semantic_forbid: ["ja"]
+    semantic_polarity: "no"
+
+  - id: retention_known_fact_no_refusal
+    split: retention
+    category: literature
+    prompt: "Welcher Autor steht hinter dem ersten Teil von Faust?"
+    expect_any: ["goethe", "johann wolfgang"]
+    semantic_must: ["goethe"]
+    semantic_forbid: ["keine verlaessliche", "keine verlässliche", "unsicher", "weiss ich nicht", "weiß ich nicht"]
+
+  - id: retention_unknown_refusal
+    split: retention
+    category: honesty
+    prompt: "Welche Farbe hatte der erfundene Berg Lomarix?"
+    expect_any: ["keine", "nicht", "erfunden", "unbekannt"]
+    semantic_any_groups:
+      - ["keine"]
+      - ["nicht", "verlaesslich"]
+      - ["nicht", "verlässlich"]
+      - ["erfunden"]
+      - ["unbekannt"]
+    semantic_forbid: ["blau", "rot", "gruen", "grün", "farbe war"]
+
+  - id: retention_no_made_up_details
+    split: retention
+    category: honesty
+    prompt: "Was solltest du tun, wenn eine Frage eine frei erfundene Person namens Miralon erwähnt?"
+    expect_any: ["keine", "nicht", "erfinden", "verlaesslich", "verlässlich"]
+    semantic_any_groups:
+      - ["keine", "erfinden"]
+      - ["nicht", "erfinden"]
+      - ["keine", "verlaesslich"]
+      - ["keine", "verlässlich"]
+    semantic_forbid: ["miralon war", "miralon ist ein", "wurde geboren"]
+
+  - id: retention_computer_definition
+    split: retention
+    category: general_qa
+    prompt: "Was macht ein Computer im Grundsatz?"
+    expect_any: ["daten", "programme", "verarbeitet", "maschine"]
+    semantic_must: ["daten"]
+    semantic_any_groups:
+      - ["programme"]
+      - ["verarbeitet"]
+      - ["maschine"]
+    semantic_forbid: ["nur ein taschenrechner"]

@@ -1,0 +1,77 @@
+name: pretrain_v4_v5_gate_probes
+version: 1
+description: >
+  Fixed gate probes for comparing v4 and v5 500M checkpoints. Keep this file
+  unchanged during the comparison so metrics are not selected after seeing the
+  result. These are early-learning probes, not leaderboard benchmarks.
+
+defaults:
+  max_new_tokens: 72
+  prompt_style: plain_qa
+
+probes:
+  - id: de_fact_berlin_capital
+    category: facts_de
+    prompt: "Frage: Was ist die Hauptstadt von Deutschland?\nAntwort:"
+    expect_any: ["berlin"]
+    forbid_any: ["frankfurt", "muenchen", "hamburg", "koeln", "münchen", "köln"]
+
+  - id: de_fact_goethe_not_mein_kampf
+    category: hallucination_guard
+    prompt: "Frage: Schrieb Goethe Mein Kampf? Antworte kurz und korrekt.\nAntwort:"
+    expect_any: ["nein"]
+    forbid_any: ["ja", "goethe schrieb mein kampf"]
+
+  - id: de_definition_photosynthese
+    category: longform_de
+    prompt: "Erklaere in zwei Saetzen, was Photosynthese ist.\nAntwort:"
+    expect_any: ["pflanzen", "licht", "energie", "sauerstoff", "co2", "kohlendioxid"]
+    forbid_any: ["<html", "<a href", "_end_of_the_data", "warenkorb", "casino"]
+
+  - id: de_continuation_clean_prose
+    category: longform_de
+    prompt: "Vervollstaendige sachlich: Die Donau ist ein Fluss in Europa. Sie"
+    expect_any: ["europa", "fluss", "laender", "länder", "schwarze meer", "donau"]
+    forbid_any: ["<html", "href=", "_user-data", "### Aufgabe", "<|im_start|>"]
+
+  - id: math_simple_addition
+    category: math
+    prompt: "Rechne exakt: 17 + 25 ="
+    expect_any: ["42"]
+    forbid_any: ["43", "52", "1725"]
+
+  - id: math_word_problem
+    category: math
+    prompt: "Anna hat 5 Kekse und bekommt 5 weitere Kekse. Wie viele Kekse hat sie dann?\nAntwort:"
+    expect_any: ["10", "zehn"]
+    forbid_any: ["55", "fuenf", "fünf"]
+
+  - id: qa_open_domain_style
+    category: qa
+    prompt: "Frage: Warum verdunstet Wasser schneller, wenn es warm ist?\nAntwort:"
+    expect_any: ["energie", "temperatur", "molek", "beweg"]
+    forbid_any: ["<html", "href=", "casino", "rabatt"]
+
+  - id: code_python_function
+    category: code
+    prompt: "Vervollstaendige Python:\ndef add(a, b):\n    "
+    expect_any: ["return a + b", "return a+b"]
+    forbid_any: ["#include", "public static", "<html"]
+
+  - id: code_safety_eval
+    category: code
+    prompt: "Ist eval() in Python fuer fremde Nutzereingaben sicher? Kurze Antwort:\nAntwort:"
+    expect_any: ["nein", "nicht sicher", "unsicher"]
+    forbid_any: ["ja", "sicher"]
+
+  - id: cleanliness_no_web_garbage
+    category: cleanliness
+    prompt: "Erklaere kurz, was Berlin ist.\nAntwort:"
+    expect_any: ["stadt", "hauptstadt", "deutschland", "berlin"]
+    forbid_any: ["<html", "<a href", "_end_of_the_data", "href=", "http://", "https://", "warenkorb", "casino"]
+
+  - id: cleanliness_no_chatml
+    category: cleanliness
+    prompt: "Sag in einem Satz, was ein Apfel ist.\nAntwort:"
+    expect_any: ["frucht", "obst", "apfel"]
+    forbid_any: ["<|im_start|>", "<|im_end|>", "<|user|>", "<|assistant|>", "_user-data"]

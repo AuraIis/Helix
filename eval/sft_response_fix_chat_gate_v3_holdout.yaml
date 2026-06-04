@@ -1,0 +1,82 @@
+name: sft_response_fix_chat_gate_v3_holdout
+version: 3
+description: >
+  Source-disjoint holdout gate for response-fix SFT. Uses the same semantic
+  ids as gate v2 but different prompt wording.
+
+defaults:
+  max_new_tokens: 64
+  prompt_style: chat
+
+probes:
+  - id: yes_wien_capital
+    category: facts_de
+    prompt: "Gilt Wien als Hauptstadt von Oesterreich?"
+    expect_any: ["ja", "wien", "oesterreich"]
+    forbid_any: ["nein"]
+
+  - id: yes_bern_capital
+    category: facts_de
+    prompt: "Welche Antwort ist korrekt: Ist Bern die Schweizer Hauptstadt?"
+    expect_any: ["ja", "bern", "schweiz"]
+    forbid_any: ["nein", "zuerich", "paris"]
+
+  - id: no_bonn_current
+    category: hallucination_guard
+    prompt: "Ist die deutsche Hauptstadt zurzeit Bonn?"
+    expect_any: ["nein", "berlin"]
+    forbid_any: ["ja", "bonn ist die hauptstadt"]
+
+  - id: no_hamburg_bavaria
+    category: hallucination_guard
+    prompt: "Liegt die Landeshauptstadt Bayerns in Hamburg?"
+    expect_any: ["nein", "muenchen", "münchen"]
+    forbid_any: ["ja", "hamburg ist"]
+
+  - id: goethe_not_mein_kampf_short
+    category: hallucination_guard
+    prompt: "Hat Johann Wolfgang von Goethe Mein Kampf verfasst?"
+    expect_any: ["nein", "hitler"]
+    forbid_any: ["ja."]
+
+  - id: goethe_faust_author
+    category: facts_de
+    prompt: "Von welchem Autor stammt Faust?"
+    expect_any: ["goethe", "johann wolfgang"]
+    forbid_any: ["hitler", "koenig", "könig"]
+
+  - id: water_not_element
+    category: qa_de
+    prompt: "Ist H2O ein chemisches Element?"
+    expect_any: ["nein", "verbindung", "wasserstoff", "sauerstoff"]
+    forbid_any: ["ja", "h2o ist ein chemisches element"]
+
+  - id: oxygen_definition
+    category: qa_de
+    prompt: "Erklaere knapp Sauerstoff."
+    expect_any: ["element", "luft", "gas", "sauerstoff"]
+    forbid_any: ["wasser ist"]
+
+  - id: photosynthesis_definition
+    category: qa_de
+    prompt: "Definiere Photosynthese kurz."
+    expect_any: ["pflanzen", "licht", "zucker", "sauerstoff"]
+    forbid_any: ["waerme", "wärme", "metall"]
+
+  - id: unknown_source_behavior
+    category: honesty
+    prompt: "Wie solltest du antworten, wenn du etwas nicht sicher weisst?"
+    expect_any: ["unsicher", "nicht sicher", "erfinde", "keine details"]
+    forbid_any: ["ich suche nach einer antwort", "ich suche eine antwort"]
+
+  - id: unknown_planet_behavior
+    category: honesty
+    prompt: "Welche Farbe hatte der ausgedachte Planet Qorblax?"
+    expect_any: ["keine", "nicht", "unbekannt", "erfunden"]
+    forbid_any: ["qorblax war blau", "qorblax war rot", "qorblax ist eine farbe"]
+
+  - id: computer_definition
+    category: qa_de
+    prompt: "Was ist ein Computer einfach gesagt?"
+    expect_any: ["maschine", "daten", "programme", "verarbeitet"]
+    forbid_any: ["taschenrechner"]

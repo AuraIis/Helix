@@ -1,0 +1,72 @@
+# Helix v2 - 500M smart MTP canary.
+#
+# Same architecture as helix_v2_mid_500m_smart.yaml, with two shared-output
+# future-token heads. The huge 200k vocab projection remains tied/shared.
+
+name: helix_v2_mid_500m_smart_mtp
+version: "2.2.0-mtp"
+
+tokenizer:
+  path: "tokenizer/helix_v2_tokenizer.model"
+  vocab_size: 200000
+
+model:
+  d_model: 1024
+  n_layers: 20
+  n_heads: 16
+  d_head: 64
+  d_ffn: 2816
+  activation: silu
+  norm_type: rmsnorm
+  norm_eps: 1.0e-6
+
+layers:
+  - {type: mamba, d_state: 64, d_conv: 4, expand_factor: 2, dt_min: 0.001, dt_max: 0.1}
+  - {type: gla, d_state: 64}
+  - {type: gla, d_state: 64}
+  - {type: sparse_attention, window_size: 1024, global_tokens: 0, use_rope: true, qk_norm: true}
+  - {type: gla, d_state: 64}
+  - {type: mamba, d_state: 64, d_conv: 4, expand_factor: 2, dt_min: 0.001, dt_max: 0.1}
+  - {type: gla, d_state: 64}
+  - {type: sparse_attention, window_size: 1024, global_tokens: 0, use_rope: true, qk_norm: true}
+  - {type: gla, d_state: 64}
+  - {type: gla, d_state: 64}
+  - {type: mamba, d_state: 64, d_conv: 4, expand_factor: 2, dt_min: 0.001, dt_max: 0.1}
+  - {type: gla, d_state: 64}
+  - {type: sparse_attention, window_size: 1024, global_tokens: 0, use_rope: true, qk_norm: true}
+  - {type: gla, d_state: 64}
+  - {type: gla, d_state: 64}
+  - {type: mamba, d_state: 64, d_conv: 4, expand_factor: 2, dt_min: 0.001, dt_max: 0.1}
+  - {type: gla, d_state: 64}
+  - {type: gla, d_state: 64}
+  - {type: sparse_attention, window_size: 1024, global_tokens: 0, use_rope: true, qk_norm: true}
+  - {type: gla, d_state: 64}
+
+ffn:
+  type: dense
+  activation: silu_gated
+
+moe: {enabled: false}
+
+mtp:
+  enabled: true
+  n_heads: 2
+  loss_weight: 0.2
+
+position_encoding:
+  type: rope
+  theta: 10000.0
+  max_seq_length: 2048
+
+init:
+  scheme: scaled_normal
+  init_std: 0.02
+  embedding_init_std: 0.02
+  output_init_scale: 0.5
+
+dropout: {embedding: 0.0, attention: 0.0, ffn: 0.0, residual: 0.0}
+
+advanced:
+  tie_embeddings: true
+  use_flash_attention: true
+  gradient_checkpointing: true

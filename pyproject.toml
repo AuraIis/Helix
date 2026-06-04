@@ -1,0 +1,132 @@
+[project]
+name = "auralis-v2"
+version = "0.1.0"
+description = "Auralis v2 — Modular AI Assistant (Helix v2 Model)"
+authors = [{ name = "Michael Speckels" }]
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Apache-2.0" }
+
+# ---------------------------------------------------------------------------
+# CORE runtime deps — kept intentionally small. These install on CPU/Windows
+# without compile steps, so bare `pip install -e .` works on Michael's dev PC
+# and on CI. GPU / phase-specific extras are opt-in via the groups below.
+# ---------------------------------------------------------------------------
+dependencies = [
+    # Tokenizer
+    "sentencepiece>=0.2.0",
+    # Core ML — torch itself is pinned explicitly in the training groups so
+    # Linux pods pick up the cu124/cu128 wheel; this one just guarantees a
+    # torch is present for tests.
+    "torch>=2.5.0",
+    # Upper bounds: transformers v5 and datasets v4 ship breaking changes
+    # (datasets v4 dropped the script-based loaders this repo relies on).
+    "transformers>=4.45.0,<5",
+    "datasets>=3.0.0,<4",
+    "huggingface_hub>=0.25.0",
+    "safetensors>=0.4.5",
+    # Utils
+    "tqdm>=4.66.0",
+    "pyyaml>=6.0.2",
+    "numpy>=1.26.0",
+    "regex>=2024.9.0",
+]
+
+# ---------------------------------------------------------------------------
+# Optional dependency groups, organised by training PHASE — lets you install
+# only what you actually need on a given machine / pod. The splits follow
+# the explicit toolchain decision for Auralis v2:
+#
+#     Pretraining (Phases 0/0.5/1/2): PyTorch + FSDP (FSDP ships with torch)
+#     Post-training  (Phases 3/4)   : TRL + accelerate
+#     LoRA           (Phase 5)      : Unsloth + PEFT + bitsandbytes
+#     Inference                     : vLLM
+#
+# NeMo / DeepSpeed / Lightning are NOT in the baseline — we avoid heavy
+# abstractions over the hybrid architecture; we can add them later if a
+# concrete need appears rather than now "just in case".
+# ---------------------------------------------------------------------------
+[project.optional-dependencies]
+
+# -- Pretraining on Linux (RunPod / Unraid) -----------------------------------
+# FSDP is part of torch, no extra pkg required. flash-attn + bitsandbytes are
+# Linux-CUDA-only and never install on Windows; platform-marked.
+pretrain = [
+    "flash-attn>=2.6.3; sys_platform == 'linux'",
+    "wandb>=0.18.0",
+    # Our custom CUDA backend swaps (optional at runtime, not imported if missing):
+    "mamba-ssm>=2.3.0; sys_platform == 'linux'",
+    "causal-conv1d>=1.6.0; sys_platform == 'linux'",
+    "flash-linear-attention>=0.1.0; sys_platform == 'linux'",
+]
+
+# -- Post-training: SFT / DPO / ORPO ----------------------------------------
+# TRL is the canonical home for these algorithms. accelerate is pulled in
+# transitively by TRL but we pin it explicitly so behaviour is predictable.
+posttrain = [
+    "trl>=0.11.0",
+    "accelerate>=1.0.0",
+]
+
+# -- LoRA / PEFT quick-iteration --------------------------------------------
+# Unsloth is Linux-only (triton), PEFT is cross-platform.
+lora = [
+    "peft>=0.13.0",
+    "unsloth>=2024.10; sys_platform == 'linux'",
+    "bitsandbytes>=0.44.0; sys_platform == 'linux'",
+]
+
+# -- Production inference ---------------------------------------------------
+# vLLM is Linux-only. autoawq is cross-platform for quantisation work.
+inference = [
+    "vllm>=0.6.0; sys_platform == 'linux'",
+    "autoawq>=0.2.6",
+]
+
+# -- Dev / test toolchain ---------------------------------------------------
+dev = [
+    "pytest>=8.3.0",
+    "pytest-cov>=5.0.0",
+    "ruff>=0.7.0",
+    "mypy>=1.11.0",
+    "ipython>=8.27.0",
+]
+
+# Convenience mega-group: `pip install -e '.[all-linux]'` on the pod installs
+# everything needed for a full Phase-1 → Phase-5 workflow on a CUDA Linux host.
+all-linux = [
+    "auralis-v2[pretrain,posttrain,lora,inference,dev]",
+]
+
+# On Windows we deliberately do NOT offer an "all" extra. Use [dev] locally
+# for running tests + the CPU smoke-test; run the actual training on a
+# Linux pod with [pretrain].
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "B", "SIM", "RUF"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --tb=short"
+# Let `pytest` work without an editable install (pip install -e .) by
+# putting src/ on sys.path at collection time. Matches what every test
+# module expects: `from auralis... import ...`.
+pythonpath = ["src"]

@@ -1,0 +1,104 @@
+name: clean_v2_base_capability_probes
+version: 1
+description: >
+  Small fixed probe set for early base-pretraining checkpoints. These probes
+  are not a benchmark leaderboard; they are a learning-curve instrument for
+  tracking whether generations become less noisy and more grounded over time.
+
+defaults:
+  max_new_tokens: 48
+  prompt_style: plain_qa
+
+probes:
+  - id: fact_berlin_capital
+    category: facts_de
+    prompt: "Frage: Was ist die Hauptstadt von Deutschland?\nAntwort:"
+    expect_any: ["berlin"]
+    forbid_any: ["frankfurt", "münchen", "hamburg", "köln"]
+
+  - id: fact_water_state
+    category: facts_de
+    prompt: "Frage: Was ist Wasser bei Raumtemperatur?\nAntwort:"
+    expect_any: ["flüssigkeit", "flüssig", "h2o"]
+    forbid_any: ["wasserfarbe", "farbe", "gas"]
+
+  - id: fact_goethe_faust
+    category: facts_de
+    prompt: "Frage: Wer schrieb Faust?\nAntwort:"
+    expect_any: ["goethe", "johann wolfgang"]
+    forbid_any: ["hitler", "mein kampf"]
+
+  - id: fact_paris_france
+    category: facts_de
+    prompt: "Frage: In welchem Land liegt Paris?\nAntwort:"
+    expect_any: ["frankreich"]
+    forbid_any: ["deutschland", "italien", "spanien"]
+
+  - id: math_addition
+    category: math
+    prompt: "Rechne: 17 + 25 ="
+    expect_any: ["42"]
+
+  - id: math_multiplication
+    category: math
+    prompt: "Rechne: 8 * 7 ="
+    expect_any: ["56"]
+
+  - id: math_subtraction
+    category: math
+    prompt: "Rechne: 100 - 37 ="
+    expect_any: ["63"]
+
+  - id: code_python_print
+    category: code
+    prompt: "Schreibe eine Python-Zeile, die Hallo ausgibt:\n"
+    expect_all: ["print", "hallo"]
+    forbid_any: ["#include", "<html", "<a href"]
+
+  - id: code_python_function
+    category: code
+    prompt: "Vervollständige Python:\ndef add(a, b):\n    "
+    expect_any: ["return a + b", "return a+b"]
+    forbid_any: ["#include", "public static", "<html"]
+
+  - id: code_no_eval
+    category: code
+    prompt: "Ist eval() in Python für fremde Nutzereingaben sicher? Kurze Antwort:"
+    expect_any: ["nein", "nicht sicher", "unsicher"]
+    forbid_any: ["ja", "sicher"]
+
+  - id: instruction_short
+    category: instruction
+    prompt: "Antworte mit genau einem Wort: Welche Farbe hat der Himmel an einem klaren Tag?\nAntwort:"
+    expect_any: ["blau"]
+    forbid_any: ["<|", "</", "http"]
+
+  - id: instruction_language
+    category: instruction
+    prompt: "Antworte auf Deutsch: What is a computer?\nAntwort:"
+    expect_any: ["computer", "rechner", "maschine"]
+    forbid_any: ["the computer is", "a computer is"]
+
+  - id: garbage_html
+    category: cleanliness
+    prompt: "Erkläre kurz, was Berlin ist.\nAntwort:"
+    expect_any: ["stadt", "hauptstadt", "deutschland"]
+    forbid_any: ["<html", "<a href", "_end_of_the_data", "href=", "http://", "https://"]
+
+  - id: garbage_chat_tokens
+    category: cleanliness
+    prompt: "Sag in einem Satz, was ein Apfel ist.\nAntwort:"
+    expect_any: ["frucht", "obst", "apfel"]
+    forbid_any: ["<|im_start|>", "<|im_end|>", "<|user|>", "<|assistant|>", "_user-data"]
+
+  - id: consistency_goethe_hitler
+    category: hallucination_guard
+    prompt: "Schrieb Goethe Mein Kampf? Antworte kurz.\nAntwort:"
+    expect_any: ["nein"]
+    forbid_any: ["ja", "hitler schrieb faust", "goethe schrieb mein kampf"]
+
+  - id: consistency_berlin_location
+    category: hallucination_guard
+    prompt: "Liegt Berlin in der Nähe von Frankfurt? Antworte vorsichtig in einem Satz.\nAntwort:"
+    expect_any: ["nein", "nicht", "eher nicht"]
+    forbid_any: ["ja", "direkt bei frankfurt"]
