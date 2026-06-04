@@ -8,16 +8,16 @@
   <rect x="0" y="0" width="1300" height="545" fill="#ffffff"/>
 
   <!-- Title -->
-  <text x="650" y="38" text-anchor="middle" font-size="26" font-weight="700" fill="#1f2a36">Helix v2 / Auralis — Hybrid-LLM (~954M, bf16)</text>
-  <text x="650" y="64" text-anchor="middle" font-size="14" fill="#5b6b7a">28 Layer · Pre-Norm · RoPE · SwiGLU-FFN · tied 200k SentencePiece-Embeddings</text>
+  <text x="650" y="38" text-anchor="middle" font-size="26" font-weight="700" fill="#1f2a36">Helix v2 / Auralis — Hybrid LLM (~954M, bf16)</text>
+  <text x="650" y="64" text-anchor="middle" font-size="14" fill="#5b6b7a">28 layers · Pre-Norm · RoPE · SwiGLU FFN · tied 200k SentencePiece embeddings</text>
 
   <!-- ===== Main flow row (y 105..255) ===== -->
 
   <!-- Box1: Input + Embedding -->
   <rect x="30" y="105" width="170" height="150" rx="12" fill="#eef1f5" stroke="#5b6b7a" stroke-width="2"/>
   <text x="115" text-anchor="middle" fill="#2c3a47">
-    <tspan x="115" y="145" font-size="15" font-weight="700">Eingabe</tspan>
-    <tspan x="115" y="167" font-size="13">Token-IDs (Sequenz)</tspan>
+    <tspan x="115" y="145" font-size="15" font-weight="700">Input</tspan>
+    <tspan x="115" y="167" font-size="13">Token IDs (sequence)</tspan>
     <tspan x="115" y="200" font-size="14" font-weight="700">Tied Embedding</tspan>
     <tspan x="115" y="220" font-size="13">200k → d=1280</tspan>
   </text>
@@ -28,10 +28,10 @@
   <rect x="225" y="105" width="185" height="150" rx="12" fill="#e3f5ea" stroke="#2e9e5b" stroke-width="2"/>
   <text x="317" text-anchor="middle" fill="#1d6b3d">
     <tspan x="317" y="142" font-size="16" font-weight="700">6× Mamba-2</tspan>
-    <tspan x="317" y="163" font-size="12.5" fill="#2c3a47">State-Space-Mixer</tspan>
+    <tspan x="317" y="163" font-size="12.5" fill="#2c3a47">State-Space Mixer</tspan>
     <tspan x="317" y="186" font-size="12.5" fill="#2c3a47">d_state=128 · conv=4</tspan>
     <tspan x="317" y="205" font-size="12.5" fill="#2c3a47">expand=2</tspan>
-    <tspan x="317" y="230" font-size="12.5" font-style="italic">lineare Zeit  O(n)</tspan>
+    <tspan x="317" y="230" font-size="12.5" font-style="italic">linear time  O(n)</tspan>
   </text>
 
   <!-- Box3: GLA (stacked) -->
@@ -43,7 +43,7 @@
     <tspan x="522" y="163" font-size="12.5" fill="#2c3a47">Gated Linear</tspan>
     <tspan x="522" y="181" font-size="12.5" fill="#2c3a47">Attention</tspan>
     <tspan x="522" y="204" font-size="12.5" fill="#2c3a47">d_state=128</tspan>
-    <tspan x="522" y="230" font-size="12.5" font-style="italic">linearer Attn-Ersatz</tspan>
+    <tspan x="522" y="230" font-size="12.5" font-style="italic">linear attention surrogate</tspan>
   </text>
 
   <!-- Box4: Sparse Attention (stacked) -->
@@ -52,8 +52,8 @@
   <rect x="635" y="105" width="185" height="150" rx="12" fill="#efe7fa" stroke="#7a45c9" stroke-width="2"/>
   <text x="727" text-anchor="middle" fill="#4f2a8a">
     <tspan x="727" y="142" font-size="15.5" font-weight="700">6× Sparse-Attn</tspan>
-    <tspan x="727" y="165" font-size="12.5" fill="#2c3a47">Fenster = 1024</tspan>
-    <tspan x="727" y="186" font-size="12.5" fill="#2c3a47">32 globale Tokens</tspan>
+    <tspan x="727" y="165" font-size="12.5" fill="#2c3a47">window = 1024</tspan>
+    <tspan x="727" y="186" font-size="12.5" fill="#2c3a47">32 global tokens</tspan>
     <tspan x="727" y="207" font-size="12.5" fill="#2c3a47">Flash-Attention</tspan>
     <tspan x="727" y="232" font-size="12.5" font-style="italic">+ RoPE</tspan>
   </text>
@@ -70,8 +70,8 @@
   <rect x="1045" y="105" width="160" height="150" rx="12" fill="#2c3a47" stroke="#2c3a47" stroke-width="2"/>
   <text x="1125" text-anchor="middle" fill="#ffffff">
     <tspan x="1125" y="165" font-size="16" font-weight="700">Logits</tspan>
-    <tspan x="1125" y="190" font-size="13">200.000</tspan>
-    <tspan x="1125" y="208" font-size="13">Vokabular</tspan>
+    <tspan x="1125" y="190" font-size="13">200,000</tspan>
+    <tspan x="1125" y="208" font-size="13">vocabulary</tspan>
   </text>
 
   <!-- flow arrows -->
@@ -84,15 +84,15 @@
   <!-- tied weights link -->
   <path d="M115,255 L115,288 L932,288 L932,257" fill="none" stroke="#b0387a" stroke-width="1.8" stroke-dasharray="6 4" marker-end="url(#arrow)"/>
   <rect x="430" y="278" width="290" height="22" rx="6" fill="#fdeef5" stroke="#b0387a" stroke-width="1"/>
-  <text x="575" y="293" text-anchor="middle" font-size="12.5" fill="#9c2e69">geteilte Gewichte: Embedding = LM-Head (tied)</text>
+  <text x="575" y="293" text-anchor="middle" font-size="12.5" fill="#9c2e69">shared weights: Embedding = LM-Head (tied)</text>
 
   <!-- ===== Block internals (left) ===== -->
-  <text x="30" y="345" font-size="15" font-weight="700" fill="#1f2a36">Aufbau eines Blocks (Pre-Norm) — gilt für jeden der 28 Layer</text>
+  <text x="30" y="345" font-size="15" font-weight="700" fill="#1f2a36">Block structure (Pre-Norm) — applies to each of the 28 layers</text>
 
   <!-- residual arcs -->
   <path d="M62,372 C 130,332 300,332 366,388" fill="none" stroke="#9aa7b3" stroke-width="1.6" stroke-dasharray="5 3" marker-end="url(#arrow)"/>
   <path d="M388,378 C 470,338 600,338 648,388" fill="none" stroke="#9aa7b3" stroke-width="1.6" stroke-dasharray="5 3" marker-end="url(#arrow)"/>
-  <text x="360" y="330" text-anchor="middle" font-size="11.5" fill="#7a8794">Residual (Skip)</text>
+  <text x="360" y="330" text-anchor="middle" font-size="11.5" fill="#7a8794">Residual (skip)</text>
 
   <rect x="30" y="385" width="62" height="60" rx="9" fill="#eef1f5" stroke="#5b6b7a" stroke-width="1.5"/>
   <text x="61" y="420" text-anchor="middle" font-size="14" font-weight="700" fill="#2c3a47">x</text>
@@ -116,7 +116,7 @@
   <text x="652" y="421" text-anchor="middle" font-size="18" font-weight="700" fill="#2c3a47">+</text>
 
   <rect x="694" y="385" width="86" height="60" rx="9" fill="#eef1f5" stroke="#5b6b7a" stroke-width="1.5"/>
-  <text x="737" y="420" text-anchor="middle" font-size="12.5" font-weight="700" fill="#2c3a47">Ausgang</text>
+  <text x="737" y="420" text-anchor="middle" font-size="12.5" font-weight="700" fill="#2c3a47">Output</text>
 
   <line x1="92" y1="415" x2="138" y2="415" stroke="#5b6b7a" stroke-width="2" marker-end="url(#arrow)"/>
   <line x1="330" y1="415" x2="353" y2="415" stroke="#5b6b7a" stroke-width="2" marker-end="url(#arrow)"/>
@@ -124,17 +124,17 @@
   <line x1="610" y1="415" x2="633" y2="415" stroke="#5b6b7a" stroke-width="2" marker-end="url(#arrow)"/>
   <line x1="669" y1="415" x2="692" y2="415" stroke="#5b6b7a" stroke-width="2" marker-end="url(#arrow)"/>
 
-  <text x="30" y="478" font-size="12" fill="#7a8794">Der Mixer wechselt mit der Tiefe: unten Mamba-2 (günstig, O(n)) · Mitte GLA · oben Sparse-Attention (präzises Token-Mixing).</text>
+  <text x="30" y="478" font-size="12" fill="#7a8794">The mixer changes with depth: Mamba-2 at the bottom (cheap, O(n)) · GLA in the middle · Sparse-Attention on top (precise token mixing).</text>
 
   <!-- ===== Specs panel (right) ===== -->
   <rect x="810" y="325" width="470" height="170" rx="10" fill="#f7f9fb" stroke="#9fb0bf" stroke-width="1.5"/>
-  <text x="828" y="349" font-size="14.5" font-weight="700" fill="#1f2a36">Spezifikationen</text>
+  <text x="828" y="349" font-size="14.5" font-weight="700" fill="#1f2a36">Specifications</text>
   <text fill="#2c3a47" font-size="13">
-    <tspan x="828" y="373">• ~954 Mio. Parameter  (tied embeddings)</tspan>
-    <tspan x="828" y="394">• d_model 1280 · 10 Heads × 128</tspan>
+    <tspan x="828" y="373">• ~954M parameters  (tied embeddings)</tspan>
+    <tspan x="828" y="394">• d_model 1280 · 10 heads × 128</tspan>
     <tspan x="828" y="415">• FFN: SwiGLU, d_ffn 3584  (~2.8× d_model)</tspan>
     <tspan x="828" y="436">• RMSNorm (ε=1e-6) · RoPE (θ=10000, ≤8192)</tspan>
-    <tspan x="828" y="457">• 200k SentencePiece-Vokabular, geteilt</tspan>
-    <tspan x="828" y="478">• bf16 · MoE aus · MTP aus</tspan>
+    <tspan x="828" y="457">• 200k SentencePiece vocabulary, tied</tspan>
+    <tspan x="828" y="478">• bf16 · MoE off · MTP off</tspan>
   </text>
 </svg>
