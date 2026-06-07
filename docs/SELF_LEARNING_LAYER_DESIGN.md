@@ -320,5 +320,82 @@ Erst wenn P1 zeigt, dass der Guard echtes Forgetting stoppt, lohnt sich P2+.
 
 ---
 
-*Dieses Dokument ist Entwurf. Nächster konkreter Schritt laut Plan: P0 (DoRA-Layer
-in `lora/`) als kleinster lauffähiger Baustein, sobald das Design bestätigt ist.*
+---
+
+## 11) Sekundäre Option: Lernen direkt im Basismodell (ohne Adapter)
+
+> **Einordnung vorweg:** Das ist eine **dokumentierte Alternative, nicht der
+> empfohlene Weg.** Der Adapter-Weg (§1–§10) bleibt die Primärentscheidung,
+> **genau weil die eingefrorene Basis nichts vergessen oder überschreiben kann** —
+> ein schlechtes Update beschädigt höchstens den Adapter, nie das Weltwissen, und
+> Rollback ist trivial (Delta wegwerfen). Diese Option wird hier festgehalten,
+> falls man später *direkt in die echten Gewichte* lernen will (näher an „wie ein
+> Mensch dazulernt"), mit vollem Bewusstsein für die Kosten.
+
+### Die Idee
+
+„Ohne LoRA, direkt im laufenden Modell" heißt technisch: die **echten
+Basis-Gewichte** werden online verändert, statt ein separates Adapter-Modul.
+Möglich ist das — aber genau das ist die in §0 als zerstörerisch markierte
+**Stufe 3**. Dass es überhaupt funktionieren kann, liegt am selben Grund, warum
+ein Mensch dabei nicht alles vergisst: das Gehirn trennt **schnelles**
+(Hippocampus) von **langsamem** Lernen (Neokortex, Konsolidierung im Schlaf) und
+schützt wichtige Synapsen (*synaptische Konsolidierung*). Naives Voll-Backprop
+aufs ganze Netz hat diesen Schutz **nicht** → catastrophic forgetting. Eine
+adapterfreie Variante muss diese Schutzmechanismen also künstlich nachbauen.
+
+### Die Methoden (geordnet von chirurgisch zu roh)
+
+| Methode | Was sie tut | Stärke | Risiko / Grenze |
+|---|---|---|---|
+| **Knowledge Editing** (ROME / MEMIT / MEND) | schreibt einen Fakt per geschlossenem Rang-1-Update direkt in eine **FFN-Matrix** | lokal, fast kein Forgetting, sofort; trifft Helix' **SwiGLU-FFN** | nur für *Fakten*, nicht für Fähigkeiten/Stil; viele Edits driften |
+| **Online-Finetune + EWC** | updatet echte Gewichte, schützt wichtige per Fisher-Strafterm (= „steife Synapse") | lernt auch *Fähigkeiten*; direkter Hirn-Nachbau | Fisher-Matrix kostet Speicher/Rechnung; Schwellen heikel |
+| **Rehearsal / Replay** | mischt alte bekannte Beispiele in jedes Update | billigste, wirksamste Forgetting-Bremse | braucht gepflegten Replay-Buffer |
+| **Sparse / selektive Updates** | ändert nur wenige aktive FFN-Zeilen | LoRA-Effekt *ohne* Zusatzmatrix, in-place | Auswahl der Zeilen nicht trivial |
+| **Fast Weights / Mamba-State** | nutzt Helix' rekurrenten **Mamba-2-State** als flüchtiges Kurzzeitgedächtnis | sofort, kein Gewichts-Update; „Hippocampus" | flüchtig — überlebt Session nicht ohne Konsolidierung |
+
+### „Ohne LoRA" ≠ „ohne Struktur"
+
+Der Kernpunkt: **reines Voll-Backprop live aufs ganze Modell zerstört es** — auch
+das Gehirn macht das nicht so. Jede Methode oben führt eine *Schutzstruktur*
+wieder ein (Lokalität, Importance-Regularisierung, Replay, Sparsity, schnell/
+langsam-Trennung). LoRA ist nur **eine** dieser Strukturen — die bequemste, weil
+Rollback trivial ist. Lässt man LoRA weg, braucht man zwingend eine der anderen.
+
+### Wie es in dieses Design einklinken würde
+
+Der Loop (§2) und das zweistufige Gedächtnis (§3) bleiben **identisch**. Es ändert
+sich nur Schritt **(F) Consolidate**:
+
+- statt `adapter.online_update(...)` → **MEMIT-Edit** der SwiGLU-FFN für
+  verifizierte *Fakten* und/oder **Mini-Finetune mit EWC + Replay** für
+  *Fähigkeiten*;
+- statt `adapter.snapshot()/restore()` → **Gewichts-Snapshot/Restore** (teurer,
+  aber funktional) als Rollback-Netz;
+- der **frozen-gate-Guard (§6.3) bleibt unverändert** der harte Wächter.
+
+Mamba-State würde als Working-Memory der Stufe 1 dienen (sofortiges „Erinnern"),
+die FFN-Edits/EWC als Langzeit-Konsolidierung (Stufe 2).
+
+### Direkter Vergleich (Entscheidungsgrundlage)
+
+| | **Adapter (§1–§10, empfohlen)** | **Direkt im Basismodell (diese Option)** |
+|---|---|---|
+| Wo landet Wissen | Zusatz-Adapter | echte Gewichte (FFN etc.) |
+| „Wie ein Mensch"? | eher Notizbuch obendrauf | näher dran (Kortex selbst) |
+| **Vergessen/Löschen** | **praktisch ausgeschlossen** (Basis read-only) | **möglich** → braucht EWC/Replay/Edit-Lokalität |
+| Rollback | trivial (Delta weg) | teuer (Voll-Snapshot) |
+| Beste Methode | Online-Finetune des Adapters | MEMIT (Fakten) + EWC/Replay (Skills) |
+
+**Fazit / Empfehlung:** Primär den Adapter-Weg umsetzen — er erfüllt die
+ausdrückliche Anforderung „**es darf nichts vergessen oder löschen**" am
+saubersten. Die adapterfreie Variante bleibt als spätere Option offen, am ehesten
+als *MEMIT-Fakten-Edit* in die FFN (lokal, forgetting-arm), falls man Wissen
+wirklich *in* die Basis und nicht *neben* sie schreiben will.
+
+---
+
+*Dieses Dokument ist Entwurf. Empfohlener nächster Schritt laut Plan: P0 (DoRA-Layer
+in `lora/`) als kleinster lauffähiger Baustein, sobald das Design bestätigt ist.
+Die adapterfreie Variante (§11) ist als spätere Option dokumentiert, nicht der
+Primärpfad.*
