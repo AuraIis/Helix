@@ -65,6 +65,12 @@ dieser Index, dann die jeweilige aktuelle Arbeitsdoku.
   Verifikation -> Konsolidierung in DoRA-Adapter), zweistufiges Gedaechtnis,
   frozen-gate-Guard. Baut additiv auf `src/auralis/adaptive/`. Noch nicht
   implementiert.
+- [SELF_LEARNING_SAFETY_LAYER.md](SELF_LEARNING_SAFETY_LAYER.md) - Entwurf fuer
+  eine unveraenderliche Sicherheitsschicht ueber dem Selbst-Lern-Layer: signierte
+  JSON-Verfassung + externer fail-closed Validator (harte Schale, ausserhalb der
+  Gewichte) + optionales frozen Safety-LoRA. Verhindert, dass die KI ihre Regeln
+  aendert/einfriert/weglaesst oder sich um sie herumlernt. Andockpunkte:
+  `AURALIS_SAFETY_POLICY.md` und `frozen_gate.py`. Noch nicht implementiert.
 
 Experiment-Regel: Nichts aus `docs/experimental/` geht in den echten
 Pretraining-Mix, bevor eine Ablation ein klares Signal zeigt.

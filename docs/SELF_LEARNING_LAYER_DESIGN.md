@@ -139,6 +139,11 @@ Claims wird **Rehearsal** beigemischt (siehe §3).
 Wissen noch sitzt. Regression → **Rollback** des Adapter-Deltas. Kein Update darf
 das Modell netto verschlechtern.
 
+> **Sicherheit:** Über diesem Loop liegt eine unveränderliche Schutzschicht — die
+> Schritte (B) Research, (F) Consolidate und jede Aktion sind durch den Safety-Layer
+> gated, damit das selbst-lernende System sich nicht um seine eigenen Regeln
+> *herumlernen* kann. Eigenes Design: `SELF_LEARNING_SAFETY_LAYER.md`.
+
 ---
 
 ## 3) Zwei-Stufen-Gedächtnis („Beides kombiniert")
