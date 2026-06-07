@@ -60,6 +60,11 @@ dieser Index, dann die jeweilige aktuelle Arbeitsdoku.
   Memory-Kernel-Prototyp.
 - [experimental/math_reasoning_dna.md](experimental/math_reasoning_dna.md) -
   geparkte Idee fuer Rechen-/Reasoning-DNA mit mentalem Arbeitsraum.
+- [SELF_LEARNING_LAYER_DESIGN.md](SELF_LEARNING_LAYER_DESIGN.md) - Entwurf fuer
+  einen Selbst-Lern-Layer: verifizierte aktive Lernschleife (Research -> externe
+  Verifikation -> Konsolidierung in DoRA-Adapter), zweistufiges Gedaechtnis,
+  frozen-gate-Guard. Baut additiv auf `src/auralis/adaptive/`. Noch nicht
+  implementiert.
 
 Experiment-Regel: Nichts aus `docs/experimental/` geht in den echten
 Pretraining-Mix, bevor eine Ablation ein klares Signal zeigt.
