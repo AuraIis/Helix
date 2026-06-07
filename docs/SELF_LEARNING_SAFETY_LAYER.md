@@ -230,7 +230,9 @@ torch-frei** (unit-testbar ohne GPU), Modell-Berührendes isoliert.
 
 - **S0 — Verfassung + Loader:** `constitution.v1.json` (HN-1..HN-5 + Aktions-
   Verbote), hash-gepinnter fail-closed Loader. Test: fehlende/veränderte Datei →
-  Start verweigert.
+  Start verweigert. ✅ **implementiert** — `configs/safety/constitution.v1.json`,
+  `src/auralis/safety/constitution.py` (torch-frei, stdlib-only), 13 Tests in
+  `tests/safety/` (inkl. Tamper-/Missing-/Empty-/Wrong-Version-Fälle).
 - **S1 — Action-Gate (SC4):** Default-deny Allow-list, jede Nebenwirkung geprüft.
   Test: verbotene Selbst-Aktion (Safety deaktivieren) wird geblockt + geloggt.
 - **S2 — Learning-Gate (SC2) + Safety-Retention-Gate:** Lern-Batch-Screening +
